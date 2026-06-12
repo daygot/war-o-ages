@@ -63,11 +63,11 @@ export function CampaignTable() {
             <div className="score-grid">
               <div>
                 <span className="label">Your Verdict</span>
-                <strong>{playerScore.final}</strong>
+                <strong>{Math.round(playerScore.final)}</strong>
               </div>
               <div>
                 <span className="label">Enemy Warband</span>
-                <strong>{enemyScore.final}</strong>
+                <strong>{Math.round(enemyScore.final)}</strong>
               </div>
             </div>
           </Panel>
@@ -83,7 +83,13 @@ export function CampaignTable() {
             </div>
           </Panel>
           <Panel title="Synergies" accent="var(--seal)">
-            {playerScore.synergies.length ? playerScore.synergies.map((synergy) => <p key={synergy} className="synergy-line">✦ {synergy}</p>) : <p className="serif-it">No omen has yet repeated.</p>}
+            {playerScore.synergies.length ? (
+              playerScore.synergies.map((synergy) => (
+                <p key={synergy.key} className="synergy-line">✦ {synergy.name} <span className="label">{synergy.pct > 0 ? '+' : ''}{synergy.pct}%</span></p>
+              ))
+            ) : (
+              <p className="serif-it">No omen has yet repeated.</p>
+            )}
           </Panel>
         </aside>
       </div>

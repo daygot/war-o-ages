@@ -37,3 +37,8 @@ _Last updated: 2026-06-12_
 - Do not commit credentials, analytics tokens, deployment secrets, or private API keys.
 - Keep build artifacts (`dist/`) uncommitted.
 - Treat uploaded screenshots/source artifacts as design references; verify rights before public release.
+
+## Typed Legacy Domain Port
+- `src/domain/game-data.ts` is the production TypeScript home for the legacy `window.WOA` catalog. It now exports the full roster, battlegrounds, ideologies, stat labels, tag stat modifiers, and synergy definitions.
+- `src/domain/engine.ts` owns pure behavior: position pools, figure power, named synergy detection, battleground multipliers, ideology effects, deterministic drafting, scoring, and grading.
+- The UI should consume `src/domain/*` only. The legacy `ui_kits/shared/data.js` file is retained as a design/reference artifact, not a runtime dependency.

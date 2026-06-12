@@ -34,3 +34,13 @@ Implications:
 - `ui_kits/desktop/` remains the visual reference until the production app reaches parity.
 - Domain/game rules should move into pure modules under `src/domain/` before UI wiring.
 - Build/test/lint commands are mandatory validation gates for implementation changes.
+
+## 2026-06-12 — Port legacy rules into typed production domain
+Decision: The full legacy `ui_kits/shared/data.js` roster/rule catalog should be represented under `src/domain/` as typed data and pure functions, while the legacy script remains reference-only.
+
+Rationale: Feature work needs tested domain behavior that can be imported by React/TypeScript without depending on global `window.WOA` runtime state.
+
+Consequences:
+- Production roster/rules are now testable through Vitest.
+- UI can render richer synergies/ideology effects from structured objects.
+- Future parity work should update `src/domain/` first, then UI, with legacy artifacts used only for comparison.
