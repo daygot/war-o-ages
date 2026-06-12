@@ -4,7 +4,7 @@ _Last updated: 2026-06-12_
 
 | Agent | Status | Current Task | Branch | Notes |
 |---|---|---|---|---|
-| hermes-default | idle | None | feat/productionize-desktop-prototype | Production app foundation complete; ready for review/merge. |
+| hermes-default | idle | None | main | Production app foundation complete and merged to `main`. |
 
 ## Coordination Notes
 - No other active task claims are known.
