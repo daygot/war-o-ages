@@ -13,10 +13,16 @@
 - Quote the local project path because it contains spaces and an apostrophe.
 
 ## Validation
-- For current static prototype work, start a local HTTP server from repo root and request the desktop UI:
+- Production app commands:
+  - `npm install`
+  - `npm run dev -- --port 5173`
+  - `npm run lint`
+  - `npm run test`
+  - `npm run build`
+- Browser smoke check: open `http://127.0.0.1:5173/` and confirm no console/JS errors.
+- Legacy static prototype reference remains available from repo root with:
   - `python3 -m http.server 4173`
   - `curl -I http://127.0.0.1:4173/ui_kits/desktop/`
-- If package tooling is added later, document the new install/build/test commands here.
 
 ## Design Conventions
 - Use `context/DESIGN.md`, `README.md`, and `DESIGN_CONTEXT.md` before frontend/design edits.

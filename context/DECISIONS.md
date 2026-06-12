@@ -23,3 +23,14 @@ Implications:
 Decision: The current repo commit preserves the static design bundle as-is and does not immediately convert it to a build system.
 
 Rationale: The user's immediate request is repo creation and GitHub push. Converting the prototype is a separate implementation task that should be claimed and validated explicitly.
+
+
+## 2026-06-12 — Use Vite + React + TypeScript as the production app foundation
+Decision: The production code path uses Vite, React, TypeScript, Vitest, Testing Library, and ESLint, with source code under `src/`.
+
+Rationale: The legacy artifact bundle proved the design direction but relied on CDN React/Babel and global `window.WOA` scripts. A typed package-managed app gives future agents a safer foundation for game logic, tests, builds, and deployment.
+
+Implications:
+- `ui_kits/desktop/` remains the visual reference until the production app reaches parity.
+- Domain/game rules should move into pure modules under `src/domain/` before UI wiring.
+- Build/test/lint commands are mandatory validation gates for implementation changes.

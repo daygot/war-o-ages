@@ -3,31 +3,35 @@
 _Last updated: 2026-06-12_
 
 ## Active Goal
-Create a GitHub-ready repository from the existing War O' Ages design bundle and adopt the agentic collaboration template before further implementation work.
+Migrate the design-artifact bundle into a robust, package-managed application foundation for longer-term development.
 
 ## Implementation State
-- Local design bundle exists under `/Users/edmond.liu/Downloads/War o' Ages`.
-- The project is a static/front-end prototype and design-system bundle, not yet a package-managed app.
-- Canonical interactive surface: `ui_kits/desktop/index.html`, loading React/Babel via CDN and local shared scripts.
-- Design context is documented in `README.md` and `DESIGN_CONTEXT.md`.
-- Agentic collaboration scaffold has been added locally: `AGENTS.md`, `context/`, `tasks/`, `handoffs/`, `agents/`, `scripts/`, and `design/` references.
+- GitHub repository exists at `https://github.com/daygot/war-o-ages` (private).
+- Production app shell now lives at the repo root via Vite: `index.html` → `src/main.tsx` → `src/App.tsx`.
+- Stack: React, TypeScript, Vite, Vitest, Testing Library, ESLint.
+- Typed game/domain modules live under `src/domain/` with deterministic campaign drafting and scoring.
+- Reusable UI components live under `src/components/` and the Campaign Table feature lives under `src/features/campaign/`.
+- Existing static design artifacts remain as references under `ui_kits/`, `components/`, `tokens/`, `uploads/`, `README.md`, and `DESIGN_CONTEXT.md`.
 
 ## Latest Validation Snapshot
-- Template source verified from `https://github.com/daygot/agentic-collaboration-template.git`.
-- Local git repository initialized on `main` and initial commit created.
-- Static preview validated with `python3 -m http.server 4173 --bind 127.0.0.1` and `curl -I http://127.0.0.1:4173/ui_kits/desktop/` returning `HTTP/1.0 200 OK`.
-- Browser render check loaded `War O' Ages — Campaign Table` with no console messages or JavaScript errors.
-- GitHub repository created and pushed: `https://github.com/daygot/war-o-ages` (private).
+- `npm install` completed successfully with 0 vulnerabilities.
+- `npm run test` passed: 2 files / 4 tests.
+- `npm run build` passed and produced `dist/`.
+- `npm run lint` passed.
+- Dev server smoke check: `curl -I http://127.0.0.1:5173/` returned `HTTP/1.1 200 OK`.
+- Browser smoke check loaded `War O' Ages`, rendered the production Campaign Table shell, and reported no console/JS errors.
 
 ## Active Work
-- None currently claimed. Repository setup and GitHub push are complete.
+- None currently claimed after productionization setup is committed/pushed.
 
 ## Known Blockers / Risks
-- GitHub CLI is not installed in the current environment; push used the existing macOS git credential helper and GitHub API instead.
-- The prototype uses CDN-hosted React/Babel; offline preview is not guaranteed.
-- The local folder name contains an apostrophe and spaces; shell commands must quote the path.
+- The new production app is an architectural slice, not full feature parity with the legacy desktop prototype.
+- `src/domain/game-data.ts` intentionally ports a curated starter roster, not the entire legacy `ui_kits/shared/data.js` catalog yet.
+- The legacy prototype still depends on CDN React/Babel and should remain reference-only until feature parity is reached.
+- Mobile remains unresolved; see `tasks/backlog/2026-06-12-audit-mobile-surface.md`.
 
 ## Recommended Next Actions
-1. Convert the static prototype into a package-managed app when implementation begins.
-2. Claim `tasks/backlog/2026-06-12-productionize-desktop-prototype.md` for the first implementation task.
-3. Audit the documented mobile surface mismatch via `tasks/backlog/2026-06-12-audit-mobile-surface.md`.
+1. Port the full legacy roster, battlegrounds, ideologies, and synergy rules into typed domain modules with tests.
+2. Build the actual phase interactions: wheel spin, rank-by-rank muster, ideology selection, battle reveal, verdict/share card.
+3. Decide deployment target and add CI for `npm run lint`, `npm run test`, and `npm run build`.
+4. Audit mobile surface availability and either restore mobile artifacts or update docs/tasks accordingly.

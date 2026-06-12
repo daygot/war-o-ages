@@ -61,16 +61,35 @@
 - Raw uploads of the rank icons (crown / feather / swords as SVG + white PNGs) live in `assets/icons/` — prefer the React components (`Crest`, `IdeologyIcon`) which already embed the paths.
 - If you need icons beyond the set, use **Lucide** (CDN) at stroke-width 1.7–2, colored `var(--ink-soft)` or region inks — it matches the house style the emblems were lifted from.
 
+## Development
+
+The repo now has a package-managed production app path in addition to the original design artifacts.
+
+```bash
+npm install
+npm run dev -- --port 5173
+npm run test
+npm run lint
+npm run build
+```
+
+Open the production app at `http://127.0.0.1:5173/`.
+
+The legacy visual prototype remains available at `ui_kits/desktop/index.html` and should be treated as the reference for feature-parity work until the production app catches up.
+
 ## Index
 
-- `styles.css` — global entry; imports everything under `tokens/`.
+- `index.html` — production Vite entry point.
+- `src/` — production React/TypeScript app.
+- `src/domain/` — typed game data, deterministic campaign engine, and scoring tests.
+- `src/components/` — production UI components translated from the design artifacts.
+- `src/features/campaign/` — Campaign Table feature shell.
+- `src/styles/app.css` — app CSS importing the existing token system.
+- `docs/ARCHITECTURE.md` — migration architecture notes.
+- `styles.css` — legacy/global token entry; imports everything under `tokens/`.
 - `tokens/` — `fonts.css`, `colors.css`, `typography.css`, `surfaces.css`, `buttons.css`, `motion.css`, `layout.css`.
-- `guidelines/` — foundation specimen cards (Design System tab).
 - `assets/icons/` — crown / feather / swords (svg + white png).
-- `components/core/` — `Button`, `Panel`, `Tag`, `Banner`, `SectionRule`.
-- `components/heraldry/` — `Sigil`, `Crest`, `WaxSeal`, `IdeologyIcon`.
-- `components/game/` — `StatRow`, `FigureCard`, `FigureRow`, `SynergyRow`, `CompassDial`.
-- `ui_kits/desktop/` — interactive desktop Campaign Table recreation (full intro→spin→council→battle→verdict flow).
-- `ui_kits/mobile/` — mobile flow recreation at 402×874 in an iOS frame.
-- `ui_kits/shared/` — the game engine both kits load: `data.js` (regions, eras, roster, synergies, ideologies), `components.js`, `board.js` (war map + wheel), `screens-a.js`, `screens-b.js`. Kept as `.js` on purpose — not part of the compiled component bundle.
-- `SKILL.md` — agent skill entry point.
+- `components/` — original JSX design component references.
+- `ui_kits/desktop/` — interactive legacy desktop Campaign Table recreation.
+- `ui_kits/shared/` — legacy game engine scripts attached to `window.WOA`; reference-only for new production code.
+- `context/`, `tasks/`, `handoffs/`, `agents/` — agentic collaboration workflow.

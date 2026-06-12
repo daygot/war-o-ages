@@ -1,0 +1,235 @@
+@import '../../styles.css';
+
+:root {
+  color: var(--ink);
+  background: var(--paper);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-width: 1100px;
+  min-height: 100vh;
+}
+
+button { font: inherit; }
+
+.campaign-shell {
+  width: min(1640px, calc(100vw - 48px));
+  margin: 0 auto;
+  padding: 22px 0 48px;
+}
+
+.command-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) auto minmax(120px, 1fr);
+  align-items: center;
+  gap: 22px;
+  padding: 12px 0 18px;
+  background: linear-gradient(180deg, rgba(230, 218, 191, 0.96), rgba(230, 218, 191, 0.8) 74%, rgba(230, 218, 191, 0));
+}
+
+.brand-lockup,
+.phase-nav,
+.score-grid,
+.tag-row,
+.section-rule {
+  display: flex;
+  align-items: center;
+}
+
+.brand-lockup { gap: 12px; }
+
+.sigil-mark {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  color: var(--gold-bright);
+  background: radial-gradient(circle, var(--night-2), var(--night));
+  border: 1px solid var(--gold);
+  border-radius: 999px;
+  box-shadow: 0 2px 7px rgba(60, 40, 18, 0.35);
+}
+
+.brand-lockup .deco {
+  font-size: 31px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.phase-nav {
+  justify-content: center;
+  gap: 8px;
+}
+
+.phase {
+  border: 0;
+  background: none;
+  color: var(--ink-faint);
+  cursor: pointer;
+  font-family: Cinzel, serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.phase.is-active { color: var(--seal); }
+
+.hero-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 28px;
+  margin: 18px 0 22px;
+  padding: 28px;
+}
+
+.hero-panel h1 {
+  margin: 0;
+  font-family: 'Cinzel Decorative', Cinzel, serif;
+  font-size: clamp(58px, 7vw, 92px);
+  line-height: 0.9;
+}
+
+.hero-panel p { margin: 10px 0 0; font-size: 21px; }
+
+.war-table {
+  display: grid;
+  grid-template-columns: 360px minmax(420px, 1fr) 360px;
+  gap: 20px;
+  align-items: start;
+}
+
+.rail,
+.stage { min-width: 0; }
+
+.stack {
+  display: grid;
+  gap: 10px;
+}
+
+.section-rule {
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.section-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--line), transparent);
+}
+
+.panel-label { margin-bottom: 12px; }
+
+.panel-dark {
+  color: var(--night-text);
+  background: radial-gradient(circle at top, #4a3824, var(--night));
+  border-color: rgba(212, 175, 79, 0.35);
+}
+
+.panel-dark h2,
+.panel-dark h3 { color: var(--night-text); }
+
+.figure-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border-left: 4px solid var(--gold);
+  background: linear-gradient(180deg, rgba(243, 236, 217, 0.92), rgba(232, 219, 188, 0.86));
+  border-radius: 3px;
+  box-shadow: 0 3px 10px rgba(70, 50, 24, 0.16);
+}
+
+.figure-copy h3,
+.battlefield-card h3,
+.panel h3 {
+  margin: 0;
+  font-family: Cinzel, serif;
+  font-size: 18px;
+  line-height: 1.05;
+}
+
+.figure-copy p,
+.battlefield-card p,
+.panel p {
+  margin: 4px 0 0;
+}
+
+.figure-power {
+  color: var(--seal);
+  font-family: Cinzel, serif;
+  font-size: 20px;
+}
+
+.tag-row {
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.woa-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 7px;
+  border: 1px solid rgba(143, 45, 34, 0.22);
+  border-radius: 999px;
+  color: var(--ink-soft);
+  background: rgba(255, 248, 226, 0.48);
+  font-family: Cinzel, serif;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.battlefield-card {
+  margin-top: 22px;
+  padding: 18px;
+  border: 1px solid rgba(212, 175, 79, 0.32);
+  background: rgba(243, 236, 217, 0.09);
+}
+
+.score-grid {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.score-grid > div {
+  flex: 1;
+  padding: 16px;
+  border: 1px solid rgba(212, 175, 79, 0.28);
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.score-grid strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--gold-bright);
+  font-family: Cinzel, serif;
+  font-size: 46px;
+  line-height: 1;
+}
+
+.synergy-line {
+  color: var(--seal);
+  font-family: Cinzel, serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.crest { display: block; filter: drop-shadow(0 2px 3px rgba(60, 40, 16, 0.3)); }

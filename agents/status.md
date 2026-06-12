@@ -4,7 +4,7 @@ _Last updated: 2026-06-12_
 
 | Agent | Status | Current Task | Branch | Notes |
 |---|---|---|---|---|
-| hermes-default | idle | None | main | Local repo initialized, validated, and pushed to `daygot/war-o-ages`. |
+| hermes-default | idle | None | feat/productionize-desktop-prototype | Production app foundation complete; ready for review/merge. |
 
 ## Coordination Notes
 - No other active task claims are known.
