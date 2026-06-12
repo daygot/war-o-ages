@@ -4,7 +4,7 @@ _Last updated: 2026-06-12_
 
 | Agent | Status | Current Task | Branch | Notes |
 |---|---|---|---|---|
-| hermes-default | idle | None | main | Local repo initialized and validated; GitHub push blocked by missing auth. |
+| hermes-default | idle | None | main | Local repo initialized, validated, and pushed to `daygot/war-o-ages`. |
 
 ## Coordination Notes
 - No other active task claims are known.
