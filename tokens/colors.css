@@ -1,0 +1,61 @@
+/* War O' Ages — color tokens
+   An illuminated war-atlas palette: aged paper grounds, walnut ink,
+   sealing-wax red and manuscript gold. Region inks are the eight
+   chart colours used for territory, crests and figure provenance. */
+
+:root {
+  /* ── Base: parchment grounds ── */
+  --paper: #e6dabf;        /* page ground */
+  --paper-2: #ece1c8;      /* lighter parchment (panel gradient end) */
+  --panel: #f3ecd9;        /* card / panel surface (gradient start) */
+  --panel-edge: #cbb98f;   /* panel border */
+  --deep: #d8c8a3;         /* recessed parchment / page edge */
+  --line: #c2ad81;         /* hairline rules */
+
+  /* ── Base: walnut ink ── */
+  --ink: #2a2017;          /* primary text */
+  --ink-soft: #5e4f3a;     /* secondary text */
+  --ink-faint: #8a795c;    /* tertiary / labels */
+
+  /* ── Accents ── */
+  --seal: #8f2d22;         /* sealing-wax red — primary action, emphasis */
+  --seal-2: #a8392b;       /* lighter wax (gradient top) */
+  --gold: #b08a2e;         /* manuscript gold — secondary accent, borders */
+  --gold-bright: #d4af4f;  /* bright gold — highlights, focus rings */
+
+  /* ── Dark "council table" surface (inverted panels, toasts) ── */
+  --night: #2a2017;        /* dark panel gradient start */
+  --night-2: #3a2c1c;      /* dark panel gradient end */
+  --night-text: #e7d3a8;   /* text on dark */
+  --night-text-soft: #b89c6a;
+
+  /* ── Shadow ── */
+  --shadow: rgba(70, 50, 24, 0.22);
+
+  /* ── Region inks (8 chart colours) ── */
+  --c-EASIA: #3f7d5a;  /* East Asia — jade green */
+  --c-MEDIT: #9a6a1f;  /* Mediterranean — ochre */
+  --c-MIDE:  #2f6f86;  /* Middle East — lapis teal */
+  --c-AFRIC: #b5642a;  /* Sub-Saharan Africa — terracotta */
+  --c-AMER:  #2d8079;  /* The Americas — verdigris */
+  --c-WEUR:  #3a5a8c;  /* Western Europe — ultramarine */
+  --c-EEUR:  #8a3b5a;  /* Eastern Europe — mulberry */
+  --c-SASIA: #a8602c;  /* South & SE Asia — sienna */
+
+  /* ── Semantic aliases ── */
+  --surface-page: var(--paper);
+  --surface-card: var(--panel);
+  --surface-recessed: var(--deep);
+  --border-card: var(--panel-edge);
+  --border-rule: var(--line);
+  --text-body: var(--ink);
+  --text-secondary: var(--ink-soft);
+  --text-muted: var(--ink-faint);
+  --accent-primary: var(--seal);
+  --accent-secondary: var(--gold);
+  --focus-ring: var(--gold-bright);
+  --positive: var(--c-EASIA);   /* buffs, "you" side */
+  --negative: var(--seal);      /* penalties, enemy side */
+  --positive-on-dark: #9fd1a8;
+  --negative-on-dark: #e0907f;
+}

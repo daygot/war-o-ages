@@ -1,0 +1,52 @@
+/* War O' Ages — typography tokens + type helper classes
+   Three voices: engraved Cinzel capitals for structure, Cinzel Decorative
+   for the wordmark, and EB Garamond (often italic) for narrative prose. */
+
+:root {
+  --serif: 'EB Garamond', 'Hoefler Text', Georgia, serif; /* @kind font */
+  --display: 'Cinzel', 'Trajan Pro', Georgia, serif; /* @kind font */
+  --deco: 'Cinzel Decorative', 'Cinzel', serif; /* @kind font */
+
+  /* semantic aliases */
+  --font-body: var(--serif);
+  --font-display: var(--display);
+  --font-wordmark: var(--deco);
+}
+
+/* ── Type helpers (used throughout the product) ── */
+
+/* Display heading — engraved capitals */
+.disp {
+  font-family: var(--display);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1.02;
+}
+
+/* Decorative wordmark face */
+.deco { font-family: var(--deco); }
+
+/* Swap just the "O" in deco titles back to Cinzel (closed counter) —
+   used in the wordmark: War <span class="wo-o">O</span>' Ages */
+.wo-o { font-family: 'Cinzel', serif; }
+
+/* Spaced small caps — section headers, rails */
+.caps {
+  font-family: var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-weight: 600;
+}
+
+/* Micro label — eyebrow over headings, metadata */
+.label {
+  font-family: var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-weight: 600;
+  font-size: 10px;
+  color: var(--ink-faint);
+}
+
+/* Narrative italic */
+.serif-it { font-style: italic; }

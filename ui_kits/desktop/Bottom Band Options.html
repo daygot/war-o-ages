@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>War O' Ages — Bottom Band Options</title>
+<link rel="stylesheet" href="../../styles.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: #2a241b; }
+  .sheet { max-width: 1560px; margin: 0 auto; padding: 34px 40px 60px; }
+  .intro { color: #cdbd97; font-family: var(--serif); font-style: italic; font-size: 14.5; margin: 6px 0 26px; }
+  .opt { margin-bottom: 34px; }
+  .opt-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 10px; }
+  .opt-head .disp { font-size: 20px; color: #e7d3a8; }
+  .opt-head .why { font-family: var(--serif); font-style: italic; font-size: 13px; color: #b3a075; }
+  .frame {
+    position: relative; overflow: hidden; border-radius: 3px;
+    border: 1px solid #4a3e2a; box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    background:
+      radial-gradient(120% 90% at 50% 0%, #e7dcc0 0%, #ddcda6 55%, #d3c096 100%);
+    height: 248px;
+  }
+  /* faux bottoms of the war-map + wheel panels, for context */
+  .ctx { position: absolute; top: -64px; left: 40px; right: 40px; display: grid;
+    grid-template-columns: 1fr 300px; gap: 18px; height: 96px; opacity: 0.95; }
+  .ctx .ph { background: linear-gradient(180deg, #efe6cf, #e4d7b8); border: 1px solid #b6a478;
+    border-radius: 2px; box-shadow: 0 2px 6px rgba(60,40,10,0.18); }
+  .ctx .ph.map { background: linear-gradient(180deg, #2e3b49, #243240); border-color: #8a7042; }
+  .band { position: absolute; left: 0; right: 0; bottom: 0; top: 56px; }
+  .ink { color: #6b5532; }
+  .ghost-panel {
+    position: absolute; left: 40px; right: 40px; top: 36px; bottom: 26px;
+    border: 1.5px dashed rgba(107,85,50,0.45); border-radius: 3px;
+    display: flex; flex-direction: column; align-items: stretch; padding: 14px 18px;
+  }
+  .ghost-row { display: flex; align-items: baseline; gap: 12px; }
+  .ghost-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; flex: 1; margin-top: 12px; }
+  .ghost-card { border: 1px dashed rgba(107,85,50,0.32); border-radius: 3px; }
+  svg { display: block; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <div class="disp" style="font-size: 30px; color: #efe2c2;">Filling the bottom band</div>
+  <div class="intro">Four directions for the empty parchment below the war map — each shown in context (the dark strip is the bottom of the war map, the light one the wheel). Pick one and I'll build it.</div>
+
+  <!-- A -->
+  <div class="opt">
+    <div class="opt-head"><span class="disp">A · The Ghosted Muster Table</span>
+      <span class="why">your suggestion — a dashed outline of the selection panel that will appear, foreshadowing where candidates land</span></div>
+    <div class="frame">
+      <div class="ctx"><div class="ph map"></div><div class="ph"></div></div>
+      <div class="band">
+        <div class="ghost-panel">
+          <div class="ghost-row">
+            <span class="disp ink" style="font-size: 19px; opacity: 0.55;">The Muster Table</span>
+            <span style="flex:1; height:1px; background: linear-gradient(90deg, rgba(107,85,50,0.35), transparent);"></span>
+            <span class="ink" style="font-family: var(--serif); font-style: italic; font-size: 12.5px; opacity: 0.6;">— awaits the wheel's verdict —</span>
+          </div>
+          <div class="ghost-cards">
+            <div class="ghost-card"></div><div class="ghost-card"></div><div class="ghost-card"></div><div class="ghost-card"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B -->
+  <div class="opt">
+    <div class="opt-head"><span class="disp">B · Cartographer's Cartouche</span>
+      <span class="why">a chart-style footer rule — twin rules, tick marks, a compass rosette and the battleground name. quiet, always appropriate</span></div>
+    <div class="frame">
+      <div class="ctx"><div class="ph map"></div><div class="ph"></div></div>
+      <div class="band">
+        <svg width="100%" height="100%" viewBox="0 0 1480 192" preserveAspectRatio="xMidYMid meet">
+          <g stroke="#6b5532" fill="none" opacity="0.65">
+            <line x1="60" y1="96" x2="640" y2="96" stroke-width="1.4"/>
+            <line x1="840" y1="96" x2="1420" y2="96" stroke-width="1.4"/>
+            <line x1="60" y1="102" x2="640" y2="102" stroke-width="0.6"/>
+            <line x1="840" y1="102" x2="1420" y2="102" stroke-width="0.6"/>
+            <g stroke-width="1">
+              <line x1="160" y1="90" x2="160" y2="102"/><line x1="260" y1="92" x2="260" y2="102"/>
+              <line x1="360" y1="90" x2="360" y2="102"/><line x1="460" y1="92" x2="460" y2="102"/>
+              <line x1="560" y1="90" x2="560" y2="102"/>
+              <line x1="920" y1="90" x2="920" y2="102"/><line x1="1020" y1="92" x2="1020" y2="102"/>
+              <line x1="1120" y1="90" x2="1120" y2="102"/><line x1="1220" y1="92" x2="1220" y2="102"/>
+              <line x1="1320" y1="90" x2="1320" y2="102"/>
+            </g>
+          </g>
+          <g transform="translate(740,96)" stroke="#6b5532" fill="none" opacity="0.8">
+            <circle r="34" stroke-width="1.4"/><circle r="27" stroke-width="0.7"/>
+            <polygon points="0,-22 4,-5 22,0 4,5 0,22 -4,5 -22,0 -4,-5" fill="#6b5532" stroke="none" opacity="0.85"/>
+            <circle r="2.6" fill="#ddcda6" stroke="none"/>
+          </g>
+          <text x="740" y="158" text-anchor="middle" fill="#6b5532" opacity="0.75"
+            style="font-family: var(--sans, sans-serif); font-size: 11px; letter-spacing: 0.34em; font-weight: 600;">COASTAL SIEGE · THEATRE OF WAR</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- C -->
+  <div class="opt">
+    <div class="opt-head"><span class="disp">C · The Standards of the Five</span>
+      <span class="why">five small banner-poles along a ground line — one per rank, hoisted as each position is filled. decorative AND a progress tracker</span></div>
+    <div class="frame">
+      <div class="ctx"><div class="ph map"></div><div class="ph"></div></div>
+      <div class="band">
+        <svg width="100%" height="100%" viewBox="0 0 1480 192" preserveAspectRatio="xMidYMid meet">
+          <line x1="120" y1="150" x2="1360" y2="150" stroke="#6b5532" stroke-width="1.3" opacity="0.55"/>
+          <g opacity="0.9">
+            <!-- hoisted standards (filled ranks) -->
+            <g transform="translate(540,150)">
+              <line y2="-92" stroke="#6b5532" stroke-width="2.2"/>
+              <path d="M0,-92 L46,-84 L0,-72 Z" fill="#41608a"/>
+              <text y="16" text-anchor="middle" fill="#6b5532" style="font-size:9px; letter-spacing:0.22em; font-weight:600;">CMD</text>
+            </g>
+            <g transform="translate(640,150)">
+              <line y2="-78" stroke="#6b5532" stroke-width="2.2"/>
+              <path d="M0,-78 L42,-71 L0,-60 Z" fill="#3e6b50"/>
+              <text y="16" text-anchor="middle" fill="#6b5532" style="font-size:9px; letter-spacing:0.22em; font-weight:600;">STR</text>
+            </g>
+            <!-- awaiting (dashed, no colour) -->
+            <g transform="translate(740,150)" opacity="0.5">
+              <line y2="-78" stroke="#6b5532" stroke-width="1.6" stroke-dasharray="4 4"/>
+              <path d="M0,-78 L42,-71 L0,-60 Z" fill="none" stroke="#6b5532" stroke-dasharray="3 3"/>
+              <text y="16" text-anchor="middle" fill="#6b5532" style="font-size:9px; letter-spacing:0.22em; font-weight:600;">GEN</text>
+            </g>
+            <g transform="translate(840,150)" opacity="0.5">
+              <line y2="-78" stroke="#6b5532" stroke-width="1.6" stroke-dasharray="4 4"/>
+              <path d="M0,-78 L42,-71 L0,-60 Z" fill="none" stroke="#6b5532" stroke-dasharray="3 3"/>
+              <text y="16" text-anchor="middle" fill="#6b5532" style="font-size:9px; letter-spacing:0.22em; font-weight:600;">TRP</text>
+            </g>
+            <g transform="translate(940,150)" opacity="0.5">
+              <line y2="-78" stroke="#6b5532" stroke-width="1.6" stroke-dasharray="4 4"/>
+              <path d="M0,-78 L42,-71 L0,-60 Z" fill="none" stroke="#6b5532" stroke-dasharray="3 3"/>
+              <text y="16" text-anchor="middle" fill="#6b5532" style="font-size:9px; letter-spacing:0.22em; font-weight:600;">ALY</text>
+            </g>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- D -->
+  <div class="opt">
+    <div class="opt-head"><span class="disp">D · Sea-Chart Contours</span>
+      <span class="why">faint coastal contour lines and soundings bleeding up from the page edge — pure atmosphere, no box, never competes</span></div>
+    <div class="frame">
+      <div class="ctx"><div class="ph map"></div><div class="ph"></div></div>
+      <div class="band">
+        <svg width="100%" height="100%" viewBox="0 0 1480 192" preserveAspectRatio="none">
+          <g fill="none" stroke="#6b5532">
+            <path d="M-20,176 C220,150 420,196 640,170 S1080,128 1500,168" opacity="0.30" stroke-width="1.2"/>
+            <path d="M-20,150 C240,122 460,176 700,146 S1120,104 1500,142" opacity="0.22" stroke-width="1"/>
+            <path d="M-20,122 C260,98 500,152 760,124 S1160,84 1500,116" opacity="0.14" stroke-width="1"/>
+            <path d="M-20,96 C280,76 540,128 820,102 S1200,66 1500,92" opacity="0.08" stroke-width="1"/>
+          </g>
+          <g fill="#6b5532" opacity="0.35" style="font-family: var(--serif); font-style: italic; font-size: 10px;">
+            <text x="330" y="166">12</text><text x="700" y="138">9</text><text x="1050" y="156">14</text><text x="1290" y="120">7</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

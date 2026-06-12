@@ -1,0 +1,36 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Dependencies / build outputs
+node_modules/
+dist/
+build/
+.cache/
+.parcel-cache/
+.vite/
+
+# Environment / credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python/local tooling
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Editor
+.idea/
+.vscode/

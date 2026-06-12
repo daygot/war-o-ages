@@ -1,0 +1,33 @@
+/* War O' Ages — buttons (engraved-capital, letterpress-pressed) */
+
+.btn {
+  font-family: var(--display); text-transform: uppercase; letter-spacing: 0.14em; font-weight: 700;
+  border: none; cursor: pointer; border-radius: 3px; position: relative;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+}
+.btn:active { transform: translateY(1px); }
+
+/* Primary — sealing-wax red. One per screen; the main action. */
+.btn-primary {
+  background: linear-gradient(180deg, var(--seal-2), var(--seal));
+  color: #f4e3c8; padding: 15px 22px; font-size: 15px;
+  box-shadow: 0 2px 0 #5e1d16, 0 6px 16px rgba(143, 45, 34, 0.4);
+  border: 1px solid #6e231a;
+}
+.btn-primary:hover { filter: brightness(1.06); }
+
+/* Ghost — parchment. Secondary / dismissive actions. */
+.btn-ghost {
+  background: linear-gradient(180deg, var(--panel), var(--deep));
+  color: var(--ink); padding: 13px 20px; font-size: 13px;
+  border: 1px solid var(--panel-edge);
+  box-shadow: 0 2px 6px var(--shadow);
+}
+
+/* Gold — ceremonial trigger (e.g. "Spin the Wheel"). */
+.btn-gold {
+  background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+  color: #3a2c10; padding: 15px 22px; font-size: 15px;
+  border: 1px solid #8a6c20;
+  box-shadow: 0 2px 0 #7a5e1c, 0 6px 16px rgba(176, 138, 46, 0.4);
+}

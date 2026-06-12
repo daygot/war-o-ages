@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>War O' Ages — Round Table Options</title>
+<link rel="stylesheet" href="../../styles.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: #2a241b; }
+  .sheet { max-width: 1500px; margin: 0 auto; padding: 34px 40px 60px; }
+  .intro { color: #cdbd97; font-family: var(--serif); font-style: italic; font-size: 14.5px; margin: 6px 0 26px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  .opt-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; }
+  .opt-head .disp { font-size: 19px; color: #e7d3a8; }
+  .opt-head .why { font-family: var(--serif); font-style: italic; font-size: 12.5px; color: #b3a075; }
+  .frame { position: relative; border-radius: 3px; border: 1px solid #4a3e2a; overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    background: radial-gradient(95% 95% at 50% 46%, #42525a, #222c30 96%); }
+  .frame svg { display: block; width: 100%; height: auto; }
+  .wide { grid-column: 1 / -1; max-width: 720px; margin: 0 auto; width: 100%; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <div class="disp" style="font-size: 30px; color: #efe2c2;">The Round Table — five treatments</div>
+  <div class="intro">Same table, five ways to handle the seat lines. A finally aims every line at the table's true center (under perspective, lines on a tilted disc must pass through the centre of the ellipse — not march off at parametric angles). Pick one.</div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+(function () {
+  const CX = 240, CY = 152, RX = 225, RY = 100;
+  const IRX = RX - 22, IRY = RY - 16;          // inner marble field
+  const MED = 50;                               // medallion radius (true circle)
+  const SEATS = [-90, -18, 54, 126, 198];       // parametric seat angles
+  const DIVS  = SEATS.map(a => (a + 36) * Math.PI / 180);
+
+  const P = { rim1:'#8a7042', rim2:'#52401f', field1:'#ece7da', field2:'#cdc3ab',
+    line:'rgba(96,70,32,0.5)', stud:'#9c7d3c', med:'#6e5226', medDark:'#cfc6ae' };
+
+  function starPts() {
+    const pts = [];
+    for (let i = 0; i < 16; i++) {
+      const a = (-90 + i * 22.5) * Math.PI / 180;
+      const r = i % 2 ? 13 : 33;
+      pts.push((CX + r * Math.cos(a)).toFixed(1) + ',' + (CY + r * Math.sin(a)).toFixed(1));
+    }
+    return pts.join(' ');
+  }
+
+  // sample an elliptical arc (parametric) as a polyline path
+  function ellipseArc(sx, sy, t0, t1, n) {
+    let d = '';
+    for (let i = 0; i <= n; i++) {
+      const t = t0 + (t1 - t0) * i / n;
+      d += (i ? 'L' : 'M') + (CX + sx * Math.cos(t)).toFixed(1) + ',' + (CY + sy * Math.sin(t)).toFixed(1);
+    }
+    return d;
+  }
+
+  // a divider line that truly converges on the table centre:
+  // take the end point on the inner-field ellipse, then start the line on the
+  // medallion circle ALONG THE SAME RAY from centre.
+  function convergentSpoke(th, endSx, endSy, startR) {
+    const ex = CX + endSx * Math.cos(th), ey = CY + endSy * Math.sin(th);
+    const phi = Math.atan2(ey - CY, ex - CX);
+    const sx = CX + startR * Math.cos(phi), sy = CY + startR * Math.sin(phi);
+    return { sx, sy, ex, ey };
+  }
+
+  function base(uid) {
+    const studs = Array.from({ length: 28 }, (_, i) => {
+      const a = i * (360 / 28) * Math.PI / 180;
+      return '<circle cx="' + (CX + (RX - 6.5) * Math.cos(a)).toFixed(1) + '" cy="' + (CY + (RY - 4.8) * Math.sin(a)).toFixed(1) + '" r="1.8" fill="' + P.stud + '"/>';
+    }).join('');
+    return {
+      head:
+        '<ellipse cx="' + CX + '" cy="' + (CY + 9) + '" rx="' + (RX + 7) + '" ry="' + (RY + 7) + '" fill="rgba(0,0,0,0.32)"/>' +
+        '<defs>' +
+        '<radialGradient id="rimg' + uid + '" cx="50%" cy="40%" r="66%"><stop offset="0" stop-color="' + P.rim1 + '"/><stop offset="1" stop-color="' + P.rim2 + '"/></radialGradient>' +
+        '<radialGradient id="fldg' + uid + '" cx="50%" cy="40%" r="62%"><stop offset="0" stop-color="' + P.field1 + '"/><stop offset="1" stop-color="' + P.field2 + '"/></radialGradient>' +
+        '</defs>' +
+        '<ellipse cx="' + CX + '" cy="' + CY + '" rx="' + RX + '" ry="' + RY + '" fill="url(#rimg' + uid + ')" stroke="' + P.stud + '" stroke-width="1.6"/>' +
+        '<ellipse cx="' + CX + '" cy="' + CY + '" rx="' + (RX - 12) + '" ry="' + (RY - 9) + '" fill="none" stroke="' + P.line + '" stroke-width="2"/>' +
+        studs +
+        '<ellipse cx="' + CX + '" cy="' + CY + '" rx="' + IRX + '" ry="' + IRY + '" fill="url(#fldg' + uid + ')" stroke="' + P.line + '" stroke-width="1"/>',
+      tail:
+        '<circle cx="' + CX + '" cy="' + CY + '" r="' + MED + '" fill="' + P.medDark + '" stroke="' + P.med + '" stroke-width="2"/>' +
+        '<circle cx="' + CX + '" cy="' + CY + '" r="38" fill="none" stroke="' + P.med + '" stroke-width="0.8"/>' +
+        '<polygon points="' + starPts() + '" fill="' + P.med + '" opacity="0.92"/>' +
+        '<circle cx="' + CX + '" cy="' + CY + '" r="4" fill="' + P.medDark + '"/>',
+    };
+  }
+
+  // seat plaques for context
+  const SEATPOS = [[240, 51.9, 'CMD'], [25.9, 120.9, 'STR'], [454.1, 120.9, 'GEN'], [108, 232.8, 'ALY'], [372, 232.8, 'TRP']];
+  const plaques = SEATPOS.map(([x, y, t]) =>
+    '<g><rect x="' + (x - 17) + '" y="' + (y - 8) + '" width="34" height="16" rx="2" fill="rgba(24,18,12,0.72)" stroke="#6e5418" stroke-width="0.8"/>' +
+    '<text x="' + x + '" y="' + (y + 3.5) + '" text-anchor="middle" font-family="serif" font-weight="700" font-size="8.5" letter-spacing="1" fill="#e7d3a8">' + t + '</text></g>'
+  ).join('');
+
+  const variants = [
+    {
+      name: 'A · Convergent spokes',
+      why: 'the lines re-done: every line aims at the table\u2019s exact centre, medallion edge \u2192 field edge',
+      draw(uid) {
+        const lines = DIVS.map(th => {
+          const s = convergentSpoke(th, IRX, IRY, MED + 2);
+          return '<line x1="' + s.sx.toFixed(1) + '" y1="' + s.sy.toFixed(1) + '" x2="' + s.ex.toFixed(1) + '" y2="' + s.ey.toFixed(1) + '" stroke="' + P.line + '" stroke-width="1"/>';
+        }).join('');
+        const b = base(uid); return b.head + lines + b.tail;
+      },
+    },
+    {
+      name: 'B · Bare marble',
+      why: 'all lines removed — the field carries itself, seats defined by the crests alone',
+      draw(uid) { const b = base(uid); return b.head + b.tail; },
+    },
+    {
+      name: 'C · Gold inlay ring',
+      why: 'no radials; a quiet double inlay band midway between medallion and rim',
+      draw(uid) {
+        const ring =
+          '<ellipse cx="' + CX + '" cy="' + CY + '" rx="' + (IRX * 0.63).toFixed(1) + '" ry="' + (IRY * 0.63).toFixed(1) + '" fill="none" stroke="rgba(156,125,60,0.65)" stroke-width="1.4"/>' +
+          '<ellipse cx="' + CX + '" cy="' + CY + '" rx="' + (IRX * 0.575).toFixed(1) + '" ry="' + (IRY * 0.575).toFixed(1) + '" fill="none" stroke="rgba(156,125,60,0.4)" stroke-width="0.7"/>';
+        const b = base(uid); return b.head + ring + b.tail;
+      },
+    },
+    {
+      name: 'D · Seat arcs',
+      why: 'no radials; a shallow engraved arc set before each seat, like place settings',
+      draw(uid) {
+        const arcs = SEATS.map(a => {
+          const th = a * Math.PI / 180;
+          return '<path d="' + ellipseArc(IRX * 0.84, IRY * 0.84, th - 0.30, th + 0.30, 14) + '" fill="none" stroke="' + P.line + '" stroke-width="1.2" stroke-linecap="round"/>';
+        }).join('');
+        const b = base(uid); return b.head + arcs + b.tail;
+      },
+    },
+    {
+      name: 'E · Spokes & ring',
+      why: 'A + C married: convergent spokes that stop at the inlay ring',
+      draw(uid) {
+        const ring =
+          '<ellipse cx="' + CX + '" cy="' + CY + '" rx="' + (IRX * 0.63).toFixed(1) + '" ry="' + (IRY * 0.63).toFixed(1) + '" fill="none" stroke="rgba(156,125,60,0.65)" stroke-width="1.4"/>';
+        const lines = DIVS.map(th => {
+          const s = convergentSpoke(th, IRX * 0.63, IRY * 0.63, MED + 2);
+          return '<line x1="' + s.sx.toFixed(1) + '" y1="' + s.sy.toFixed(1) + '" x2="' + s.ex.toFixed(1) + '" y2="' + s.ey.toFixed(1) + '" stroke="' + P.line + '" stroke-width="1"/>';
+        }).join('');
+        const b = base(uid); return b.head + ring + lines + b.tail;
+      },
+    },
+  ];
+
+  const grid = document.getElementById('grid');
+  variants.forEach((v, i) => {
+    const div = document.createElement('div');
+    if (i === 4) div.className = 'wide';
+    div.innerHTML =
+      '<div class="opt-head"><span class="disp">' + v.name + '</span><span class="why">' + v.why + '</span></div>' +
+      '<div class="frame"><svg viewBox="0 0 480 300">' + v.draw(i) + plaques + '</svg></div>';
+    grid.appendChild(div);
+  });
+})();
+</script>
+</body>
+</html>

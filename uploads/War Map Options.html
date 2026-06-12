@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Battle Across Time — War Map Backgrounds</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="styles.css" />
+<style>
+  html, body { margin: 0; padding: 0; min-height: 100%; background: #cabfa0; }
+  #root { min-height: 100vh; }
+  .mapcap { font-family: var(--serif); font-size: 13px; color: var(--ink-soft); line-height: 1.4; margin-top: 10px; }
+  .mapcap b { font-family: var(--display); font-weight: 700; letter-spacing: 0.04em; color: var(--ink); text-transform: uppercase; font-size: 11px; }
+  .mklabel {
+    font-family: var(--display); font-size: 8px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink);
+    background: rgba(243,236,217,0.85); padding: 1px 5px; border-radius: 2px;
+    border: 1px solid rgba(194,173,129,0.6); white-space: nowrap;
+  }
+  .mklabel.on-dark { color: #e7d3a8; background: rgba(30,24,17,0.7); border-color: #6e5418; }
+  .verdict { display:inline-block; font-family: var(--display); font-size: 9px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; padding: 2px 8px; border-radius: 2px; margin-bottom: 8px; }
+  .v-good { color: #2c5f3a; background: rgba(63,125,90,0.14); border: 1px solid rgba(63,125,90,0.4); }
+  .v-warn { color: #8f2d22; background: rgba(143,45,34,0.12); border: 1px solid rgba(143,45,34,0.4); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<template id="__bundler_thumbnail">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#cbb98a"/>
+    <g fill="none" stroke="#7a5a2e" stroke-width="2">
+      <ellipse cx="50" cy="30" rx="44" ry="22"/><ellipse cx="50" cy="30" rx="30" ry="15"/>
+      <path d="M2,70 C25,60 40,80 60,72 C78,65 90,82 98,76"/>
+    </g>
+    <path d="M50,40 l4,8 9,1 -6.5,6 1.5,9 -8,-4.5 -8,4.5 1.5,-9 -6.5,-6 9,-1 z" fill="#b08a2e"/>
+  </svg>
+</template>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script src="data.js"></script>
+<script src="icon-feather.js"></script>
+<script src="icon-swords.js"></script>
+<script type="text/babel" src="components.jsx"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+
+<script type="text/babel" data-presets="react">
+const W = 480, H = 300;
+
+// pentagon formation, matching the live board
+const POS = [
+  { key: 'commander',  abbr: 'CMD', x: '50%', y: '12%' },
+  { key: 'strategist', abbr: 'STR', x: '17%', y: '40%' },
+  { key: 'general',    abbr: 'GEN', x: '83%', y: '40%' },
+  { key: 'allies',     abbr: 'ALY', x: '31%', y: '80%' },
+  { key: 'troops',     abbr: 'TRP', x: '69%', y: '80%' },
+];
+
+function CompassRose({ x, y, dark }) {
+  const ink = dark ? '#caa84a' : '#5e4f3a';
+  const seal = dark ? '#caa84a' : '#8f2d22';
+  return (
+    <svg width="46" height="46" viewBox="0 0 40 40" style={{ position: 'absolute', left: x, top: y, opacity: dark ? 0.65 : 0.5 }}>
+      <circle cx="20" cy="20" r="15" fill="none" stroke={ink} strokeWidth="0.8" />
+      <path d="M20,4 L23,20 L20,36 L17,20 Z" fill={seal} opacity="0.75" />
+      <path d="M4,20 L20,17 L36,20 L20,23 Z" fill={ink} opacity="0.5" />
+      <text x="20" y="11" textAnchor="middle" fontSize="5" fontFamily="Cinzel" fill={ink}>N</text>
+    </svg>
+  );
+}
+
+function Cartouche({ label, dark }) {
+  return (
+    <div style={{
+      position: 'absolute', top: 8, left: 8, zIndex: 6,
+      background: 'linear-gradient(180deg,#2a2017,#3a2c1c)', color: '#e7d3a8',
+      fontFamily: 'var(--display)', fontWeight: 700, fontSize: 9, letterSpacing: '0.14em',
+      textTransform: 'uppercase', padding: '4px 11px', borderRadius: 2, whiteSpace: 'nowrap',
+      border: '1px solid var(--gold)', boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+    }}>{label}</div>
+  );
+}
+
+// ── Background treatments ─────────────────────────────────────
+const topoRings = (cx, cy, color) => [40, 80, 120, 160].map(r =>
+  <ellipse key={r} cx={cx} cy={cy} rx={r * 1.3} ry={r} fill="none" stroke={color} strokeWidth="0.8" />);
+
+function BgVellum() {
+  return (
+    <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(120% 100% at 50% 0%, #ddcfac, #cbb98a 80%)' }}>
+      <svg width="100%" height="100%" viewBox="0 0 480 300" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0 }}>
+        <g>{topoRings(240, 30, 'rgba(120,90,46,0.26)')}</g>
+        <g stroke="rgba(120,90,46,0.14)" strokeWidth="0.6">
+          {Array.from({ length: 22 }).map((_, i) => <line key={i} x1={i * 24} y1="262" x2={i * 24 + 16} y2="300" />)}
+        </g>
+        <g fill="rgba(120,90,46,0.18)">
+          {[[70,255],[120,268],[400,250],[360,275],[300,260]].map(([x,y],i)=>(
+            <path key={i} d={`M${x},${y} l3,-5 3,5 z`} />
+          ))}
+        </g>
+      </svg>
+      <CompassRose x="86%" y="72%" />
+    </div>
+  );
+}
+
+function BgHex() {
+  return (
+    <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(120% 120% at 50% 40%, #e6dab9, #cdbb8d 85%)' }}>
+      <svg width="100%" height="100%" viewBox="0 0 480 300" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0 }}>
+        <defs>
+          <pattern id="hex" width="34" height="29.4" patternUnits="userSpaceOnUse" patternTransform="translate(0,0)">
+            <path d="M8.5,0 L25.5,0 L34,14.7 L25.5,29.4 L8.5,29.4 L0,14.7 Z"
+              fill="none" stroke="rgba(120,90,46,0.20)" strokeWidth="0.7" />
+          </pattern>
+        </defs>
+        <rect width="480" height="300" fill="url(#hex)" />
+      </svg>
+      <div style={{ position: 'absolute', inset: 7, border: '1px solid rgba(120,90,46,0.35)', borderRadius: 2, pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', inset: 10, border: '1px solid rgba(120,90,46,0.2)', borderRadius: 2, pointerEvents: 'none' }} />
+      <CompassRose x="86%" y="72%" />
+    </div>
+  );
+}
+
+function BgContour() {
+  // elevation contours centred on the warband — a plateau they all hold
+  const contour = (scale, op) => {
+    const cx = 240, cy = 150;
+    const pts = [];
+    const N = 24;
+    for (let i = 0; i <= N; i++) {
+      const a = (i / N) * Math.PI * 2;
+      const wob = 1 + 0.16 * Math.sin(a * 3 + scale) + 0.08 * Math.cos(a * 5);
+      pts.push([cx + Math.cos(a) * 150 * scale * wob, cy + Math.sin(a) * 96 * scale * wob]);
+    }
+    return <path d={'M' + pts.map(p => p.map(n => n.toFixed(1)).join(',')).join(' L') + ' Z'}
+      fill="none" stroke={`rgba(110,82,40,${op})`} strokeWidth="0.9" />;
+  };
+  return (
+    <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(90% 90% at 50% 50%, #dccda4, #c2b083 90%)' }}>
+      <svg width="100%" height="100%" viewBox="0 0 480 300" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0 }}>
+        {[0.32, 0.5, 0.68, 0.86, 1.05, 1.25].map((s, i) => <g key={i}>{contour(s, 0.32 - i * 0.025)}</g>)}
+        <text x="240" y="155" textAnchor="middle" fontFamily="Cinzel" fontSize="9" letterSpacing="0.2em" fill="rgba(110,82,40,0.5)">HIGH GROUND</text>
+      </svg>
+      <CompassRose x="86%" y="72%" />
+    </div>
+  );
+}
+
+function BgChart() {
+  // antique sea-chart: island of land in the centre, ocean framed at the edges
+  return (
+    <div style={{ position: 'absolute', inset: 0, background: '#bcc9c2' }}>
+      <svg width="100%" height="100%" viewBox="0 0 480 300" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0 }}>
+        {/* ocean hatching */}
+        <g stroke="rgba(70,110,128,0.28)" strokeWidth="0.7" fill="none">
+          {Array.from({ length: 30 }).map((_, i) => <line key={i} x1="0" y1={i * 10 + 4} x2="480" y2={i * 10 + 4} />)}
+        </g>
+        {/* rhumb lines from centre */}
+        <g stroke="rgba(120,90,46,0.22)" strokeWidth="0.6">
+          {Array.from({ length: 16 }).map((_, i) => {
+            const a = (i / 16) * Math.PI * 2;
+            return <line key={i} x1="240" y1="150" x2={240 + Math.cos(a) * 400} y2={150 + Math.sin(a) * 400} />;
+          })}
+        </g>
+        {/* central landmass */}
+        <path d="M120,70 C90,95 95,140 110,175 C125,215 175,250 240,252 C310,250 370,210 380,170 C392,128 372,88 330,68 C285,46 165,42 120,70 Z"
+          fill="#cfc09a" stroke="rgba(90,66,30,0.6)" strokeWidth="1.6" />
+        <g>{topoRings(240, 150, 'rgba(120,90,46,0.16)').slice(0, 2)}</g>
+      </svg>
+      <CompassRose x="85%" y="6%" />
+    </div>
+  );
+}
+
+function BgRiverBorder() {
+  // river kept, but routed along the bottom as a natural boundary behind the host
+  return (
+    <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(120% 100% at 50% 0%, #ddcfac, #cbb98a 82%)' }}>
+      <svg width="100%" height="100%" viewBox="0 0 480 300" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0 }}>
+        <g>{topoRings(240, 20, 'rgba(120,90,46,0.22)').slice(0, 3)}</g>
+        {/* river hugging the bottom edge */}
+        <path d="M-10,300 L-10,284 C70,272 130,292 210,283 C290,274 360,294 490,282 L490,300 Z"
+          fill="rgba(86,128,150,0.30)" />
+        <path d="M-10,284 C70,272 130,292 210,283 C290,274 360,294 490,282"
+          fill="none" stroke="rgba(70,110,140,0.5)" strokeWidth="1.6" />
+        <path d="M-10,289 C70,277 130,297 210,288 C290,279 360,299 490,287"
+          fill="none" stroke="rgba(70,110,140,0.28)" strokeWidth="0.8" />
+        {/* a road the host marches in on */}
+        <path d="M240,40 C238,110 244,180 242,250" fill="none" stroke="rgba(120,90,46,0.3)" strokeWidth="1.4" strokeDasharray="5 5" />
+      </svg>
+      <CompassRose x="86%" y="70%" />
+    </div>
+  );
+}
+
+function BgSlate() {
+  return (
+    <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(110% 110% at 50% 30%, #4c4232, #2b251c 96%)' }}>
+      <svg width="100%" height="100%" viewBox="0 0 480 300" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0 }}>
+        {/* gold survey grid */}
+        <g stroke="rgba(196,158,66,0.20)" strokeWidth="0.6">
+          {Array.from({ length: 13 }).map((_, i) => <line key={'v'+i} x1={i * 40} y1="0" x2={i * 40} y2="300" />)}
+          {Array.from({ length: 8 }).map((_, i) => <line key={'h'+i} x1="0" y1={i * 40} x2="480" y2={i * 40} />)}
+        </g>
+        <g>{topoRings(240, 30, 'rgba(212,175,79,0.18)')}</g>
+        <path d="M-10,212 C70,182 110,252 170,227 C230,202 270,262 320,237 C370,216 430,250 490,232"
+          fill="none" stroke="rgba(120,160,180,0.22)" strokeWidth="1.2" />
+      </svg>
+      <Cartouche label="City Walls" dark />
+      <CompassRose x="86%" y="72%" dark />
+    </div>
+  );
+}
+
+// ── Round Table (exploring D) ─────────────────────────────────
+// The host seated around an ornate council table, evenly spaced.
+const SEATS_ROUND = [
+  { key: 'commander',  abbr: 'CMD', x: '50%',   y: '16%' },
+  { key: 'general',    abbr: 'GEN', x: '78.1%', y: '40%' },
+  { key: 'troops',     abbr: 'TRP', x: '67.4%', y: '78.7%' },
+  { key: 'allies',     abbr: 'ALY', x: '32.6%', y: '78.7%' },
+  { key: 'strategist', abbr: 'STR', x: '21.9%', y: '40%' },
+];
+
+const TABLE_PAL = {
+  oak:    { rim1: '#7a5830', rim2: '#42301a', field1: '#6c4c2a', field2: '#46321c', line: 'rgba(212,175,79,0.6)',  stud: '#e1bd5c', med: '#e1bd5c', medDark: '#33260f', floor: 'radial-gradient(95% 95% at 50% 46%, #4f4534, #2a251c 96%)', floorRing: 'rgba(212,175,79,0.10)' },
+  green:  { rim1: '#6a4a28', rim2: '#3a2712', field1: '#264636', field2: '#15291d', line: 'rgba(212,175,79,0.55)', stud: '#d9b653', med: '#e1bd5c', medDark: '#11241a', floor: 'radial-gradient(95% 95% at 50% 46%, #3a2f20, #1d1711 96%)', floorRing: 'rgba(212,175,79,0.08)' },
+  marble: { rim1: '#8a7042', rim2: '#52401f', field1: '#ece7da', field2: '#cdc3ab', line: 'rgba(96,70,32,0.5)',  stud: '#9c7d3c', med: '#6e5226', medDark: '#cfc6ae', floor: 'radial-gradient(95% 95% at 50% 46%, #4e4639, #2c2820 96%)', floorRing: 'rgba(206,180,120,0.10)' },
+};
+
+function OrnateTable({ variant }) {
+  const cx = 240, cy = 152, rx = 134, ry = 98;
+  const p = TABLE_PAL[variant];
+  const seatAngles = [-90, -18, 54, 126, 198];
+  const dividers = seatAngles.map(a => a + 36);
+  const studs = Array.from({ length: 28 }, (_, i) => i * (360 / 28));
+  const starPts = [];
+  for (let i = 0; i < 16; i++) {
+    const a = (-90 + i * 22.5) * Math.PI / 180;
+    const r = i % 2 ? 7.5 : 19;
+    starPts.push([(cx + r * Math.cos(a)).toFixed(1), (cy + r * Math.sin(a)).toFixed(1)]);
+  }
+  return (
+    <g>
+      {/* cast shadow */}
+      <ellipse cx={cx} cy={cy + 11} rx={rx + 7} ry={ry + 7} fill="rgba(0,0,0,0.32)" />
+      <defs>
+        <radialGradient id={'rim-' + variant} cx="50%" cy="40%" r="66%">
+          <stop offset="0" stopColor={p.rim1} /><stop offset="1" stopColor={p.rim2} />
+        </radialGradient>
+        <radialGradient id={'fld-' + variant} cx="50%" cy="40%" r="62%">
+          <stop offset="0" stopColor={p.field1} /><stop offset="1" stopColor={p.field2} />
+        </radialGradient>
+      </defs>
+      {/* wooden rim */}
+      <ellipse cx={cx} cy={cy} rx={rx} ry={ry} fill={`url(#rim-${variant})`} stroke={p.stud} strokeWidth="1.6" />
+      <ellipse cx={cx} cy={cy} rx={rx - 9} ry={ry - 7} fill="none" stroke={p.line} strokeWidth="2" />
+      {/* brass studs in the rim */}
+      {studs.map((d, i) => { const a = d * Math.PI / 180; return <circle key={i} cx={cx + (rx - 4.5) * Math.cos(a)} cy={cy + (ry - 3.5) * Math.sin(a)} r="1.4" fill={p.stud} />; })}
+      {/* inner field */}
+      <ellipse cx={cx} cy={cy} rx={rx - 14} ry={ry - 11} fill={`url(#fld-${variant})`} stroke={p.line} strokeWidth="1" />
+      {/* radial seat divisions */}
+      {dividers.map((d, i) => { const a = d * Math.PI / 180; return <line key={i} x1={cx + 25 * Math.cos(a)} y1={cy + 19 * Math.sin(a)} x2={cx + (rx - 15) * Math.cos(a)} y2={cy + (ry - 12) * Math.sin(a)} stroke={p.line} strokeWidth="1" />; })}
+      {/* central medallion + compass star */}
+      <circle cx={cx} cy={cy} r="27" fill={p.medDark} stroke={p.med} strokeWidth="1.6" />
+      <circle cx={cx} cy={cy} r="21" fill="none" stroke={p.med} strokeWidth="0.7" />
+      <polygon points={starPts.map(pt => pt.join(',')).join(' ')} fill={p.med} opacity="0.92" />
+      <circle cx={cx} cy={cy} r="2.4" fill={p.medDark} />
+    </g>
+  );
+}
+
+function RoundTableFrame({ variant, ink }) {
+  const p = TABLE_PAL[variant];
+  return (
+    <div style={{ position: 'relative', width: W, height: H, borderRadius: 3, overflow: 'hidden', border: '1px solid var(--panel-edge)', boxShadow: '0 2px 10px rgba(60,40,16,0.25)' }}>
+      <div style={{ position: 'absolute', inset: 0, background: p.floor }}>
+        <svg width="100%" height="100%" viewBox="0 0 480 300" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0 }}>
+          {/* faint hall-floor rings */}
+          <g fill="none" stroke={p.floorRing} strokeWidth="1">
+            {[150, 210, 270].map(r => <ellipse key={r} cx="240" cy="152" rx={r} ry={r * 0.72} />)}
+          </g>
+          <OrnateTable variant={variant} />
+        </svg>
+      </div>
+      {SEATS_ROUND.map(s => (
+        <div key={s.key} style={{ position: 'absolute', left: s.x, top: s.y, transform: 'translate(-50%,-50%)', zIndex: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+          <Crest placeholderAbbr={s.abbr} ink={ink} pos={s.key} size={44} />
+          <span className="mklabel on-dark">{s.abbr}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function MapFrame({ children, dark, ink }) {
+  return (
+    <div style={{ position: 'relative', width: W, height: H, borderRadius: 3, overflow: 'hidden', border: '1px solid var(--panel-edge)', boxShadow: '0 2px 10px rgba(60,40,16,0.25)' }}>
+      {children}
+      {POS.map(p => (
+        <div key={p.key} style={{ position: 'absolute', left: p.x, top: p.y, transform: 'translate(-50%,-50%)', zIndex: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+          <Crest placeholderAbbr={p.abbr} ink={ink} pos={p.key} size={44} />
+          <span className={'mklabel' + (dark ? ' on-dark' : '')}>{p.abbr}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Terrain feature components (antique-map style) ───────────
+function Hill({ cx, cy, c }) {
+  return (
+    <g>
+      {[1, 0.65, 0.35].map((s, i) => (
+        <path key={i} d={`M${cx - 50 * s},${cy + 6} C${cx - 26 * s},${cy - 30 * s} ${cx + 26 * s},${cy - 30 * s} ${cx + 50 * s},${cy + 6}`}
+          fill="none" stroke={c} strokeWidth={0.9 - i * 0.22} />
+      ))}
+      {Array.from({ length: 10 }, (_, i) => {
+        const x = cx - 34 + i * 8;
+        return <line key={i} x1={x} y1={cy - 1} x2={x - 4} y2={cy + 9} stroke={c} strokeWidth="0.6" />;
+      })}
+      <path d={`M${cx - 10},${cy - 24} L${cx},${cy - 40} L${cx + 10},${cy - 24}`} fill="none" stroke={c} strokeWidth="1" />
+    </g>
+  );
+}
+function Forest({ cx, cy, c }) {
+  const ts = [[-22, -2], [-8, -8], [7, 1], [21, -4], [-13, 13], [11, 11]];
+  return (
+    <g>
+      {ts.map(([dx, dy], i) => (
+        <g key={i}>
+          <line x1={cx + dx} y1={cy + dy + 14} x2={cx + dx} y2={cy + dy + 6} stroke={c} strokeWidth="1.1" />
+          <path d={`M${cx + dx - 8},${cy + dy + 7} L${cx + dx},${cy + dy - 9} L${cx + dx + 8},${cy + dy + 7} Z`}
+            fill="none" stroke={c} strokeWidth="0.85" />
+        </g>
+      ))}
+    </g>
+  );
+}
+function Keep({ cx, cy, c }) {
+  const w = 42, h = 26;
+  return (
+    <g fill="none" stroke={c} strokeWidth="0.9">
+      <rect x={cx - w / 2} y={cy - h / 2} width={w} height={h} />
+      {Array.from({ length: 6 }, (_, i) => (
+        <rect key={i} x={cx - w / 2 + i * 7 + 1} y={cy - h / 2 - 5} width="5" height="5" />
+      ))}
+      <path d={`M${cx - 6},${cy + h / 2} V${cy + 3} A6,6 0 0 1 ${cx + 6},${cy + 3} V${cy + h / 2}`} />
+      <circle cx={cx - w / 2} cy={cy - h / 2} r="5.5" />
+      <circle cx={cx + w / 2} cy={cy - h / 2} r="5.5" />
+    </g>
+  );
+}
+function Roads({ cx, cy, c }) {
+  return (
+    <g fill="none">
+      <path d={`M${cx - 54},${cy + 22} C${cx - 22},${cy + 5} ${cx - 7},${cy} ${cx},${cy}`} stroke={c} strokeWidth="2.3" />
+      <path d={`M${cx + 54},${cy + 22} C${cx + 22},${cy + 5} ${cx + 7},${cy} ${cx},${cy}`} stroke={c} strokeWidth="2.3" />
+      <line x1={cx} y1={cy} x2={cx} y2={cy - 32} stroke={c} strokeWidth="1.6" strokeDasharray="4 3" />
+      {[[-22, 17], [18, 19]].map(([dx, dy], i) => (
+        <path key={i} d={`M${cx + dx - 9},${cy + dy} L${cx + dx},${cy + dy - 13} L${cx + dx + 9},${cy + dy}`}
+          stroke={c} strokeWidth="0.85" fill="none" />
+      ))}
+    </g>
+  );
+}
+function PlainField({ cx, cy, c }) {
+  return (
+    <g>
+      <path d={`M${cx - 50},${cy + 4} C${cx - 28},${cy - 14} ${cx - 4},${cy + 4} ${cx + 16},${cy - 10} C${cx + 32},${cy - 20} ${cx + 50},${cy - 5} ${cx + 58},${cy + 4}`}
+        fill="none" stroke={c} strokeWidth="0.9" />
+      {Array.from({ length: 9 }, (_, i) => {
+        const x = cx - 30 + i * 8;
+        return <line key={i} x1={x} y1={cy - 12} x2={x - 10} y2={cy + 14} stroke={c} strokeWidth="0.65" />;
+      })}
+    </g>
+  );
+}
+function TerrainLabels({ dark }) {
+  const lc = dark ? 'rgba(212,175,79,0.55)' : 'rgba(110,82,40,0.52)';
+  const gc = dark ? 'rgba(140,185,95,0.65)' : 'rgba(65,90,45,0.58)';
+  return (
+    <g fontFamily="Cinzel" letterSpacing="0.16em">
+      <text x="240" y="17" textAnchor="middle" fontSize="5.5" fill={lc}>HIGH GROUND</text>
+      <text x="46" y="97" textAnchor="middle" fontSize="4.5" fill={gc}>THE WOOD</text>
+      <text x="416" y="96" textAnchor="middle" fontSize="4.5" fill={lc}>THE KEEP</text>
+      <text x="149" y="237" textAnchor="middle" fontSize="4.5" fill={lc}>CROSSROADS</text>
+      <text x="332" y="237" textAnchor="middle" fontSize="4.5" fill={lc}>OPEN FIELD</text>
+    </g>
+  );
+}
+function BgVellumTerrain() {
+  const c = 'rgba(110,82,40,0.26)';
+  const fc = 'rgba(65,92,44,0.32)';
+  return (
+    <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(120% 100% at 50% 0%, #ddcfac, #cbb98a 80%)' }}>
+      <svg width="100%" height="100%" viewBox="0 0 480 300" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0 }}>
+        <g fill="none" stroke="rgba(120,90,46,0.13)" strokeWidth="0.7">
+          {[55, 108].map(r => <ellipse key={r} cx="240" cy="36" rx={r * 1.3} ry={r} />)}
+        </g>
+        <Hill cx={240} cy={60} c={c} />
+        <Forest cx={82} cy={138} c={fc} />
+        <Keep cx={400} cy={124} c={c} />
+        <Roads cx={149} cy={258} c={c} />
+        <PlainField cx={332} cy={258} c={c} />
+        <TerrainLabels dark={false} />
+      </svg>
+      <CompassRose x="86%" y="66%" />
+    </div>
+  );
+}
+function BgSlateTerrain() {
+  const c = 'rgba(212,175,79,0.32)';
+  const fc = 'rgba(128,176,82,0.34)';
+  return (
+    <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(110% 110% at 50% 30%, #4c4232, #2b251c 96%)' }}>
+      <svg width="100%" height="100%" viewBox="0 0 480 300" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0 }}>
+        <g stroke="rgba(196,158,66,0.13)" strokeWidth="0.5">
+          {Array.from({ length: 13 }, (_, i) => <line key={'v' + i} x1={i * 40} y1="0" x2={i * 40} y2="300" />)}
+          {Array.from({ length: 8 }, (_, i) => <line key={'h' + i} x1="0" y1={i * 40} x2="480" y2={i * 40} />)}
+        </g>
+        <Hill cx={240} cy={60} c={c} />
+        <Forest cx={82} cy={138} c={fc} />
+        <Keep cx={400} cy={124} c={c} />
+        <Roads cx={149} cy={258} c={c} />
+        <PlainField cx={332} cy={258} c={c} />
+        <TerrainLabels dark={true} />
+      </svg>
+      <Cartouche label="Campaign Table" dark />
+      <CompassRose x="86%" y="66%" dark />
+    </div>
+  );
+}
+
+// ── Knights Hall frame ────────────────────────────────────────
+function KnightsHallFrame({ variant, ink }) {
+  const p = TABLE_PAL[variant];
+  return (
+    <div style={{ position: 'relative', width: W, height: H, borderRadius: 3, overflow: 'hidden', border: '1px solid var(--panel-edge)', boxShadow: '0 2px 10px rgba(60,40,16,0.25)' }}>
+      <div style={{ position: 'absolute', inset: 0, background: p.floor }} />
+      {/* torch-corner glow */}
+      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(circle at 4% 6%, rgba(255,140,20,0.20), transparent 28%), radial-gradient(circle at 96% 6%, rgba(255,140,20,0.20), transparent 28%), radial-gradient(circle at 4% 94%, rgba(255,140,20,0.11), transparent 24%), radial-gradient(circle at 96% 94%, rgba(255,140,20,0.11), transparent 24%)' }} />
+      <svg width="100%" height="100%" viewBox="0 0 480 300" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0 }}>
+        <defs>
+          <pattern id={`slab-${variant}`} width="38" height="28" patternUnits="userSpaceOnUse">
+            <rect width="38" height="28" fill="none" stroke={p.floorRing} strokeWidth="0.5" />
+            <line x1="0" y1="14" x2="19" y2="14" stroke={p.floorRing} strokeWidth="0.3" />
+          </pattern>
+        </defs>
+        <rect width="480" height="300" fill={`url(#slab-${variant})`} />
+        {/* hall perspective lines */}
+        <g fill="none" stroke={p.floorRing} strokeWidth="0.5">
+          {[0, 69, 138, 207, 276, 345, 414, 480].map((x, i) => (
+            <line key={i} x1={x} y1={0} x2={240} y2={152} />
+          ))}
+        </g>
+        {/* wall banners — four corners */}
+        {[[22, 0], [100, 0], [380, 0], [458, 0]].map(([bx, by], i) => {
+          const cols = [p.stud, p.med, p.med, p.stud];
+          return (
+            <g key={i}>
+              <line x1={bx} y1={by} x2={bx} y2={52} stroke="rgba(100,74,34,0.6)" strokeWidth="1.4" />
+              <path d={`M${bx},${by + 4} L${bx + 20},${by + 13} L${bx},${by + 30} Z`}
+                fill={cols[i]} stroke="rgba(100,74,34,0.5)" strokeWidth="0.8" opacity="0.85" />
+            </g>
+          );
+        })}
+        {/* torch sconces */}
+        {[[18, 16], [462, 16], [18, 244], [462, 244]].map(([tx, ty], i) => (
+          <g key={i}>
+            <ellipse cx={tx} cy={ty + 28} rx="52" ry="68" fill="rgba(255,138,18,0.09)" />
+            <path d={`M${tx - 4},${ty + 4} L${tx},${ty - 8} L${tx + 4},${ty + 4}`} fill="rgba(255,185,45,0.75)" />
+            <path d={`M${tx - 2},${ty + 3} L${tx},${ty - 3} L${tx + 2},${ty + 3}`} fill="rgba(255,230,90,0.9)" />
+            <line x1={tx} y1={ty + 4} x2={tx} y2={ty + 16} stroke="rgba(100,70,30,0.65)" strokeWidth="2.5" />
+            <rect x={tx - 5} y={ty + 14} width="10" height="4" rx="1" fill="rgba(130,90,42,0.55)" />
+          </g>
+        ))}
+        <OrnateTable variant={variant} />
+      </svg>
+      {SEATS_ROUND.map(s => (
+        <div key={s.key} style={{ position: 'absolute', left: s.x, top: s.y, transform: 'translate(-50%,-50%)', zIndex: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+          <Crest placeholderAbbr={s.abbr} ink={ink} pos={s.key} size={44} />
+          <span className="mklabel on-dark">{s.abbr}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const OPTIONS = [
+  { id: 'vellum', label: 'A · Unified Vellum', verdict: ['v-good', 'Undivided'],
+    cap: <span className="mapcap"><b>Unified Vellum.</b> The current parchment & contour rings, with the dividing river removed. Cleanest, closest to today — the whole host shares one ground.</span>,
+    render: <MapFrame ink="#4a3826"><BgVellum /></MapFrame> },
+  { id: 'hex', label: 'B · Campaign Hex Grid', verdict: ['v-good', 'Undivided'],
+    cap: <span className="mapcap"><b>Campaign Hex Grid.</b> A faint tactical hex lattice over warm vellum, double-ruled border. Reads as a wargame table — structured and neutral, no terrain splits the ranks.</span>,
+    render: <MapFrame ink="#4a3826"><BgHex /></MapFrame> },
+  { id: 'contour', label: 'C · Contour Highlands', verdict: ['v-good', 'Undivided'],
+    cap: <span className="mapcap"><b>Contour Highlands.</b> Elevation contours close on the centre — the whole legion holds one plateau of high ground. Terrain unites instead of dividing.</span>,
+    render: <MapFrame ink="#4a3826"><BgContour /></MapFrame> },
+  { id: 'chart', label: 'D · Old-World Sea Chart', verdict: ['v-good', 'Undivided'],
+    cap: <span className="mapcap"><b>Old-World Sea Chart.</b> An island of land ringed by hatched ocean and rhumb lines. Water frames the edges, so the host stands together on shore — never split by it.</span>,
+    render: <MapFrame ink="#4a3826"><BgChart /></MapFrame> },
+  { id: 'river', label: 'E · River as Border', verdict: ['v-good', 'Undivided'],
+    cap: <span className="mapcap"><b>River as Border.</b> Keeps the river you have, but routes it along the bottom edge as a natural frontier the host has at its back — with a march-road in. Same motif, no split.</span>,
+    render: <MapFrame ink="#4a3826"><BgRiverBorder /></MapFrame> },
+  { id: 'slate', label: 'F · Dark Tactical Slate', verdict: ['v-good', 'Undivided'],
+    cap: <span className="mapcap"><b>Dark Tactical Slate.</b> A war-room table: charcoal ground, gold survey grid and contour rings. Highest contrast — crests glow against the dark. A bolder departure from parchment.</span>,
+    render: <MapFrame dark ink="#6e5634"><BgSlate /></MapFrame> },
+];
+
+const TERRAIN_OPTIONS = [
+  { id: 'vellum-t', label: 'G · Vellum + Position Terrain',
+    cap: <span className="mapcap"><b>Vellum Terrain.</b> Each figure on its own ground — commander holds the high ridge, strategist shelters in the wood, general anchors the keep, allies at the crossroads, troops on the open field.</span>,
+    render: <MapFrame ink="#4a3826"><BgVellumTerrain /></MapFrame> },
+  { id: 'slate-t', label: 'H · Tactical Slate + Position Terrain',
+    cap: <span className="mapcap"><b>Slate Terrain.</b> Same position-specific ground in gold-on-charcoal. Each figure's strategic context reads clearly against the dark war-room surface.</span>,
+    render: <MapFrame dark ink="#6e5634"><BgSlateTerrain /></MapFrame> },
+];
+
+const TABLE_OPTIONS = [
+  { id: 'table-oak', label: 'I · Oak Council Hall',
+    cap: <span className="mapcap"><b>Oak Hall.</b> Dark walnut table, torch-lit stone chamber, hall banners. The warband seated in equal council — rank set aside, one table.</span>,
+    render: <KnightsHallFrame variant="oak" ink="#c4a44a" /> },
+  { id: 'table-green', label: 'J · Green Baize Table',
+    cap: <span className="mapcap"><b>Green Baize.</b> The classic council cloth — felt green, the table of knights in deliberation. Formal and serious, the ground of strategy not battle.</span>,
+    render: <KnightsHallFrame variant="green" ink="#c4a44a" /> },
+  { id: 'table-marble', label: 'K · White Marble Rotunda',
+    cap: <span className="mapcap"><b>Marble Rotunda.</b> A grand hall of pale stone — the table a slab of marble inlaid with gold. The most palatial and ceremonial option.</span>,
+    render: <KnightsHallFrame variant="marble" ink="#8a6c30" /> },
+];
+
+function App() {
+  return (
+    <DesignCanvas>
+      <DCSection id="warmaps" title="War Map Backgrounds" subtitle="Six grounds for the formation board — each keeps the warband on one side.">
+        {OPTIONS.map(o => (
+          <DCArtboard key={o.id} id={o.id} label={o.label} width={W + 40} height={H + 116}>
+            <div style={{ padding: 20 }}>
+              <span className={'verdict ' + o.verdict[0]}>{o.verdict[1]}</span>
+              {o.render}
+              {o.cap}
+            </div>
+          </DCArtboard>
+        ))}
+      </DCSection>
+      <DCSection id="terrain" title="Position Terrain" subtitle="Commander on the high ridge, strategist in the wood, general at the keep — each figure on its own strategic ground.">
+        {TERRAIN_OPTIONS.map(o => (
+          <DCArtboard key={o.id} id={o.id} label={o.label} width={W + 40} height={H + 100}>
+            <div style={{ padding: 20 }}>
+              {o.render}
+              {o.cap}
+            </div>
+          </DCArtboard>
+        ))}
+      </DCSection>
+      <DCSection id="roundtable" title="Knights of the Round Table" subtitle="The host assembled in council — equal rank, one table, torch-lit hall.">
+        {TABLE_OPTIONS.map(o => (
+          <DCArtboard key={o.id} id={o.id} label={o.label} width={W + 40} height={H + 100}>
+            <div style={{ padding: 20 }}>
+              {o.render}
+              {o.cap}
+            </div>
+          </DCArtboard>
+        ))}
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
