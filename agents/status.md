@@ -4,7 +4,7 @@ _Last updated: 2026-06-12_
 
 | Agent | Status | Current Task | Branch | Notes |
 |---|---|---|---|---|
-| hermes-default | active | Port legacy domain data and rules | feat/port-legacy-domain-rules | Migrating reference `window.WOA` data/rules into typed production domain modules. |
+| hermes-default | idle | None | main | Legacy domain data/rules port complete and merged to `main`. |
 
 ## Coordination Notes
 - No other active task claims are known.

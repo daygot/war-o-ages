@@ -27,7 +27,7 @@ Migrate the design-artifact bundle into a robust, package-managed application fo
 - Browser smoke check loaded `War O' Ages`, rendered the production Campaign Table shell with richer domain data, and reported no console/JS errors.
 
 ## Active Work
-- `feat/port-legacy-domain-rules` completed locally and ready to commit/merge/push.
+- None currently claimed after the legacy domain data/rules port was merged to `main`.
 
 ## Known Blockers / Risks
 - The typed domain rules are now much closer to the legacy reference, but the interactive UI still remains an architectural shell rather than full feature parity.
