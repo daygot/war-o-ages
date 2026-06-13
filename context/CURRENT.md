@@ -6,8 +6,10 @@ _Last updated: 2026-06-13_
 Production app now targets 1-to-1 desktop Campaign Table parity with the canonical `ui_kits/desktop/index.html` / `desktop-app.js` design.
 
 ## Implementation State
-- GitHub repository exists at `https://github.com/daygot/war-o-ages` (private).
+- GitHub repository exists at `https://github.com/daygot/war-o-ages` (public, required for GitHub Pages on the current plan).
+- Live GitHub Pages site: `https://daygot.github.io/war-o-ages/`.
 - Production app shell lives at the repo root via Vite: `index.html` → `src/main.tsx` → `src/App.tsx`.
+- GitHub Pages deployment is configured via `.github/workflows/deploy-pages.yml`; Vite uses `/war-o-ages/` as `base` in GitHub Actions and `/` locally.
 - Stack: React, TypeScript, Vite, Vitest, Testing Library, ESLint.
 - `src/App.tsx` now renders the canonical desktop Campaign Table production port from `src/legacy/DesktopApp.jsx`.
 - `src/legacy/` contains the production-bundled version of the approved desktop prototype:
@@ -27,10 +29,12 @@ Production app now targets 1-to-1 desktop Campaign Table parity with the canonic
 - `npm run test` passed: 2 files / 10 tests.
 - `npm run build` passed and produced `dist/`.
 - `npm run lint` passed.
+- GitHub Pages workflow run `27472979362` completed successfully and published `https://daygot.github.io/war-o-ages/`.
+- Browser smoke check loaded the live Pages URL and reported no console/JS errors.
 - Browser smoke check loaded `http://127.0.0.1:5173/`, rendered the parchment desktop command-table design, showed no console/JS errors, opened the Muster screen through the app event path, and confirmed the visual layout: top command bar, left legion rail, center battlefield/war-map area, right enemy warband rail, and Books button.
 
 ## Active Work
-- Desktop 1-to-1 production port is ready to merge/push after final commit.
+- No active work claimed. GitHub Pages hosting is configured and live.
 
 ## Known Blockers / Risks
 - This is intentionally a direct production port of the canonical desktop prototype. Some modules remain `.jsx` with `allowJs` enabled to keep the approved design faithful and avoid a risky rewrite during the parity pass.
@@ -40,5 +44,4 @@ Production app now targets 1-to-1 desktop Campaign Table parity with the canonic
 ## Recommended Next Actions
 1. Run a deeper manual dogfood pass through full rank filling, ideology choice, battle reveal, verdict, and Books filtering.
 2. Convert `src/legacy/*.jsx` to typed `.tsx` incrementally once visual/behavior parity is stable.
-3. Add CI for `npm run lint`, `npm run test`, and `npm run build`.
-4. Audit mobile surface availability and either restore mobile artifacts or update docs/tasks accordingly.
+3. Audit mobile surface availability and either restore mobile artifacts or update docs/tasks accordingly.

@@ -8,6 +8,7 @@ _Last updated: 2026-06-13_
 - JSX modules are temporarily allowed for the direct desktop parity port.
 - Vitest + Testing Library for domain and UI regression tests.
 - ESLint for static quality gates.
+- GitHub Actions deploys the static `dist/` artifact to GitHub Pages at `https://daygot.github.io/war-o-ages/`.
 - Existing CSS token files remain imported through `src/styles/app.css` → `../../styles.css`.
 
 ## Source Layout
@@ -26,7 +27,7 @@ _Last updated: 2026-06-13_
 - `ui_kits/` — legacy design/prototype reference; no longer required at runtime for the production app path.
 
 ## Data / Control Flow
-1. Vite serves `index.html` and bundles `src/main.tsx`.
+1. Vite serves `index.html` and bundles `src/main.tsx`; local builds use `/`, GitHub Actions builds use `/war-o-ages/` for GitHub Pages asset paths.
 2. `App` renders the desktop parity `DesktopApp`.
 3. `DesktopApp` owns campaign UI state: intro, muster/spin, council, battle, result, Books overlay, seed, enemy, battleground, ideology, rerolls, and twist.
 4. `legacyData.ts` delegates domain behavior to `src/domain/engine.ts` and domain catalog data from `src/domain/game-data.ts`, then exposes the legacy-friendly shape consumed by the ported design components.
@@ -38,7 +39,7 @@ _Last updated: 2026-06-13_
 3. Port the approved desktop prototype into production imports for a 1-to-1 behavioral/visual baseline.
 4. Dogfood parity and fix concrete discrepancies.
 5. Incrementally type/refactor the JSX parity modules to TSX without changing visible behavior.
-6. Add CI/deployment once local validation and manual dogfood are stable.
+6. Maintain GitHub Pages CI/deployment with test, lint, build, and Pages artifact upload.
 
 ## Safety and Security Notes
 - Do not commit credentials, analytics tokens, deployment secrets, or private API keys.
