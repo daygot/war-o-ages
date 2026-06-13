@@ -1,5 +1,5 @@
-import { CampaignTable } from './features/campaign/CampaignTable';
+import DesktopApp from './legacy/DesktopApp.jsx';
 
 export default function App() {
-  return <CampaignTable />;
+  return <DesktopApp />;
 }
