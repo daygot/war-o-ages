@@ -26,6 +26,18 @@ describe('App', () => {
     expect(screen.getByText(/The Wheel of Ages/i)).toBeInTheDocument();
   });
 
+  it('renders the completed legion council instead of blanking after all positions are filled', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: /Council/i }));
+
+    expect(await screen.findByText(/The War Council/i)).toBeInTheDocument();
+    expect(screen.getByText(/Synergies & De-Buffs/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /March to War/i })).toBeInTheDocument();
+    expect(document.body.textContent).toContain('Choose an Ideology');
+  });
+
   it('opens The Books codex overlay from the command bar', async () => {
     const user = userEvent.setup();
     render(<App />);

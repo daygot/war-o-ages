@@ -14,6 +14,10 @@ const legacyFigure = (figure: Figure): LegacyFigure => ({
 });
 
 const legacyRoster = ROSTER.map(legacyFigure);
+const legacyIdeologies = IDEOLOGIES.map((ideology) => ({
+  ...ideology,
+  effect: (squad: LegacySquad) => ideologyEffect(picksFromSquad(squad), ideology),
+}));
 const byId = new Map(legacyRoster.map((figure) => [figure.id, figure]));
 const byName = new Map(legacyRoster.map((figure) => [figure.name, figure]));
 
@@ -36,8 +40,8 @@ function picksFromSquad(squad: LegacySquad): LegionPick[] {
   return picks;
 }
 
-function ideologyByKey(key: string | null | undefined): Ideology | null {
-  return IDEOLOGIES.find((ideology) => ideology.key === key) ?? null;
+function ideologyByKey(key: string | null | undefined) {
+  return legacyIdeologies.find((ideology) => ideology.key === key) ?? null;
 }
 
 const noIdeology: Ideology = {
@@ -110,7 +114,7 @@ export const WOA = {
   POSITIONS,
   ROSTER: legacyRoster,
   BATTLEGROUNDS,
-  IDEOLOGIES,
+  IDEOLOGIES: legacyIdeologies,
   STAT_KEYS,
   STAT_LABELS,
   SYNERGY_DEFS,

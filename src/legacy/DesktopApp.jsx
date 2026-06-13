@@ -469,6 +469,22 @@ const dPill = (c) => ({
   border: `1px solid ${c}`, color: c, background: 'rgba(255,250,235,0.5)',
 });
 
+function SynergyRow({ s, delay = 0, fired }) {
+  const colors = { buff: 'var(--c-EASIA)', risk: 'var(--gold)', penalty: 'var(--seal)', ideology: 'var(--gold)' };
+  const c = colors[s.kind] || 'var(--ink-soft)';
+  return (
+    <div className="panel" style={{ padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 10,
+      borderLeft: `4px solid ${c}`, animation: 'woaTick 0.4s ease both', animationDelay: `${delay}ms`,
+      boxShadow: fired ? `0 0 0 2px ${hexA('#d4af4f', 0.5)}` : undefined }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div className="disp" style={{ fontSize: 14.5, color: 'var(--ink)' }}>{s.name}</div>
+        <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 11.5, color: 'var(--ink-soft)' }}>{s.note}</div>
+      </div>
+      <div className="disp" style={{ fontSize: 18, color: c, whiteSpace: 'nowrap' }}>{s.pct > 0 ? '+' : ''}{s.pct}%</div>
+    </div>
+  );
+}
+
 // ── Candidate card (selection phase) ─────────────────────────
 function CandidateCard({ fig, posKey, selected, onSelect, draggable, onDragStart, onDragEnd }) {
   return (
