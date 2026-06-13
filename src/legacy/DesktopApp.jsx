@@ -1459,6 +1459,102 @@ function makeTwist(scored) {
   return { side, fig, text, pct, good, helpsYou: (side === 'player') === good };
 }
 
+const ResultCard = React.forwardRef(function ResultCard({ player, enemy, battleground, win, grade, twist }, ref) {
+  const bgPct = Math.round((player.bg - 1) * 100);
+  const reckoning = [
+    ...player.syn.map(s => ({ ...s, tag: s.kind === 'ideology' ? 'Ideology' : (s.pct >= 0 ? 'Synergy' : 'De-Buff') })),
+    ...(bgPct !== 0 ? [{ name: battleground.name, pct: bgPct, note: 'The ground itself took a side', tag: 'Field' }] : []),
+    ...(twist ? [{ name: 'Twist of Fate', pct: twist.pct, note: twist.text, tag: 'Fate',
+      side: twist.side === 'player' ? 'Your Legion' : 'The Enemy' }] : []),
+  ];
+  return (
+    <div ref={ref} style={{
+      position: 'relative', borderRadius: 4, overflow: 'hidden',
+      background: 'linear-gradient(170deg, #efe6cf 0%, #e2d3ad 100%)',
+      border: '2px solid #6e5418',
+      boxShadow: '0 10px 30px rgba(60,40,16,0.35)', padding: 3,
+    }}>
+      <div style={{ border: '1px solid var(--gold)', borderRadius: 2, padding: '16px 17px 14px', position: 'relative' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <div className="deco" style={{ fontSize: 17, fontWeight: 900, color: 'var(--ink)', lineHeight: 1 }}>War <span className="wo-o">O</span>' Ages</div>
+            <div className="label" style={{ fontSize: 8, marginTop: 2 }}>{battleground.name} · Daily Battlefield</div>
+          </div>
+          <Sigil size={28} />
+        </div>
+        <div className="hr-rule" style={{ margin: '12px 0' }} />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', textAlign: 'center' }}>
+          <div>
+            <div className="label" style={{ fontSize: 9 }}>You</div>
+            <div className="disp" style={{ fontSize: 64, color: win ? 'var(--seal)' : 'var(--ink-soft)', lineHeight: 1 }}>{Math.round(player.final)}</div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, padding: '0 12px' }}>
+            <WaxSeal grade={win ? grade : { letter: grade.letter, label: grade.label, color: '#8a795c' }} size={76} animate />
+            <div className="deco" style={{ fontSize: 15, fontWeight: 900, letterSpacing: '0.06em', color: win ? 'var(--seal)' : 'var(--ink-soft)' }}>{win ? 'WON' : 'LOST'}</div>
+          </div>
+          <div>
+            <div className="label" style={{ fontSize: 9 }}>Foe</div>
+            <div className="disp" style={{ fontSize: 64, color: 'var(--ink-soft)', lineHeight: 1 }}>{Math.round(enemy.final)}</div>
+          </div>
+        </div>
+        <div className="hr-rule" style={{ margin: '14px 0 10px' }} />
+        <div className="label" style={{ fontSize: 8.5, marginBottom: 7 }}>The Reckoning</div>
+        {reckoning.length === 0 ? (
+          <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 12, color: 'var(--ink-faint)', textAlign: 'center', padding: '3px 0 1px' }}>
+            No synergies stirred — the legion fought on raw merit.
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            {reckoning.map((s) => {
+              const accent = s.pct >= 0 ? 'var(--c-EASIA)' : 'var(--seal)';
+              const sideInk = s.side === 'The Enemy' ? 'var(--seal)' : 'var(--c-EASIA)';
+              return (
+                <div key={s.tag + s.name} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 9px',
+                  borderRadius: 3, background: 'rgba(255,250,235,0.55)', border: '1px solid var(--line)',
+                  borderLeft: `3px solid ${accent}` }}>
+                  <span style={{ fontFamily: 'var(--display)', fontSize: 7.5, fontWeight: 700, letterSpacing: '0.12em',
+                    textTransform: 'uppercase', color: accent, width: 54, flexShrink: 0 }}>{s.tag}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                      <span className="disp" style={{ fontSize: 12.5, lineHeight: 1.1, color: 'var(--ink)' }}>{s.name}</span>
+                      {s.side && (
+                        <span style={{ fontFamily: 'var(--display)', fontSize: 7, fontWeight: 700, letterSpacing: '0.1em',
+                          textTransform: 'uppercase', padding: '1.5px 5px', borderRadius: 2, whiteSpace: 'nowrap',
+                          color: sideInk, border: `1px solid ${sideInk}`, background: 'rgba(255,250,235,0.6)' }}>{s.side}</span>
+                      )}
+                    </div>
+                    {s.note && <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 10, color: 'var(--ink-soft)', lineHeight: 1.25, marginTop: 1 }}>{s.note}</div>}
+                  </div>
+                  <span className="disp" style={{ fontSize: 15, color: accent, whiteSpace: 'nowrap' }}>
+                    {s.pct > 0 ? '+' : ''}{s.pct}%
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        <div style={{ textAlign: 'center', marginTop: 13 }}>
+          <span style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 11.5, color: 'var(--ink-soft)' }}>
+            “{win ? quoteWin(player) : quoteLoss(enemy)}”
+          </span>
+        </div>
+        <div style={{ textAlign: 'center', marginTop: 8 }}>
+          <span className="caps" style={{ fontSize: 8, color: 'var(--ink-faint)' }}>waroages.io · can you conquer history?</span>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+function quoteWin(p) {
+  const star = D.POSITIONS.map(x => p.squad[x.key]).filter(Boolean).sort((a, b) => b.pr - a.pr)[0];
+  return `${star.name} led ${Math.round(p.final)} souls to glory.`;
+}
+function quoteLoss(e) {
+  const star = D.POSITIONS.map(x => e.squad[x.key]).filter(Boolean).sort((a, b) => b.pr - a.pr)[0];
+  return `${star.name}'s host proved one rank too strong.`;
+}
+
 function DResult({ player, enemy, battleground, twist, onReplay }) {
   const adjP = twist && twist.side === 'player' ? Math.max(0, Math.round(player.final * (1 + twist.pct / 100))) : Math.round(player.final);
   const adjE = twist && twist.side === 'foe' ? Math.max(0, Math.round(enemy.final * (1 + twist.pct / 100))) : Math.round(enemy.final);

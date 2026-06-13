@@ -1,9 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
 
 describe('App', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
   it('renders the canonical desktop Campaign Table intro', () => {
     render(<App />);
 
@@ -36,6 +39,19 @@ describe('App', () => {
     expect(screen.getByText(/Synergies & De-Buffs/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /March to War/i })).toBeInTheDocument();
     expect(document.body.textContent).toContain('Choose an Ideology');
+  });
+
+  it('renders the verdict screen with a twist of fate instead of blanking', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.75);
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: /Verdict/i }));
+
+    expect(await screen.findByText(/Victory|Defeat/i)).toBeInTheDocument();
+    expect(screen.getByText(/The Reckoning/i)).toBeInTheDocument();
+    expect(screen.getByText(/Share the Chronicle/i)).toBeInTheDocument();
+    expect(screen.getByText(/New War/i)).toBeInTheDocument();
   });
 
   it('opens The Books codex overlay from the command bar', async () => {
