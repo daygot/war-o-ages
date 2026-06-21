@@ -34,3 +34,6 @@ __pycache__/
 # Editor
 .idea/
 .vscode/
+
+# Local Claude Code preview config (machine-specific absolute paths)
+.claude/

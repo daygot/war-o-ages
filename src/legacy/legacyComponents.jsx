@@ -1,5 +1,12 @@
-import React from 'react';
+import React, { useState, useRef, useLayoutEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { WOA } from './legacyData';
+import { chronicleFor } from './chronicles';
+
+const TIER_INK = {
+  Legendary: 'var(--gold-bright)', Elite: 'var(--seal)',
+  Notable: 'var(--ink)', Historic: 'var(--ink-faint)',
+};
 
 // ── Position emblems — subtle heraldic charges in the shield base ──
 // Each suggests the rank's purpose; rendered faintly behind/below the
@@ -254,4 +261,75 @@ export function Banner({ children, sub }) {
 
 // Alias under the project's terminology — every chooser now speaks "Ideology".
 export const IdeologyIcon = BannerIcon;
+
+// ── Figure placard — the lore card shown on hover and in The Books ──
+export function FigurePlacard({ fig, pos, showFootnote = true }) {
+  const { hook, body } = chronicleFor(fig);
+  return (
+    <div className="panel" style={{ width: 330, padding: '15px 17px 14px', boxShadow: '0 18px 50px rgba(20,12,4,0.4)' }}>
+      <div className="frame-rule" />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <Crest fig={fig} size={44} pos={pos} />
+        <div style={{ minWidth: 0 }}>
+          <div className="disp" style={{ fontSize: 19, lineHeight: 1.05 }}>{fig.name}</div>
+          <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 12, color: 'var(--ink-soft)', marginTop: 2 }}>
+            {fig.regionName} · {fig.eraName} · <span style={{ color: TIER_INK[fig.tier] || 'var(--ink)', fontStyle: 'normal', fontWeight: 700 }}>{fig.tier}</span>
+          </div>
+        </div>
+      </div>
+      <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 13.5, color: 'var(--seal)', lineHeight: 1.4, margin: '12px 0 0' }}>
+        {hook}
+      </div>
+      <div style={{ fontFamily: 'var(--serif)', fontSize: 13, color: 'var(--ink)', lineHeight: 1.5, marginTop: 7 }}>
+        {body}
+      </div>
+      {showFootnote && (
+        <div className="caps" style={{ fontSize: 8.5, letterSpacing: '0.18em', color: 'var(--ink-faint)', textAlign: 'center', marginTop: 12 }}>
+          Open the Books for the full chronicle
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Wraps a figure card so hovering it raises a placard, portaled to <body>
+// (so it escapes rail overflow) and clamped to the viewport.
+export function FigureHover({ fig, pos, children, style, block }) {
+  const anchorRef = useRef(null);
+  const cardRef = useRef(null);
+  const [open, setOpen] = useState(false);
+  const [coords, setCoords] = useState(null);
+
+  // Position once, after the placard has rendered (so its real height is
+  // known). Depends only on `open`, so it never loops.
+  useLayoutEffect(() => {
+    if (!open) { setCoords(null); return; }
+    const anchor = anchorRef.current?.getBoundingClientRect();
+    if (!anchor) return;
+    const ph = cardRef.current?.getBoundingClientRect();
+    const W = ph?.width || 330;
+    const H = ph?.height || 220;
+    let left = anchor.right + 12;
+    if (left + W > window.innerWidth - 8) left = anchor.left - W - 12;
+    if (left < 8) left = 8;
+    let top = anchor.top;
+    if (top + H > window.innerHeight - 8) top = window.innerHeight - 8 - H;
+    if (top < 8) top = 8;
+    setCoords({ left, top });
+  }, [open]);
+
+  return (
+    <div ref={anchorRef} onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}
+      style={{ position: 'relative', display: block ? 'block' : undefined, ...style }}>
+      {children}
+      {open && createPortal(
+        <div ref={cardRef} style={{ position: 'fixed', left: coords?.left ?? -9999, top: coords?.top ?? -9999,
+          zIndex: 80, pointerEvents: 'none', opacity: coords ? 1 : 0, transition: 'opacity .12s ease' }}>
+          <FigurePlacard fig={fig} pos={pos} />
+        </div>,
+        document.body,
+      )}
+    </div>
+  );
+}
 

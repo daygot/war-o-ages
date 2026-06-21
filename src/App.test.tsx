@@ -11,7 +11,6 @@ describe('App', () => {
     render(<App />);
 
     expect(screen.getByRole('heading', { name: /War O' Ages/i })).toBeInTheDocument();
-    expect(screen.getByText(/Assemble a legion across history/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Begin Campaign/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /The Books/i })).toBeInTheDocument();
     expect(screen.getByText(/Your Legion/i)).toBeInTheDocument();

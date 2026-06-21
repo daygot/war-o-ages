@@ -13,31 +13,49 @@ const FORMATION = {
   troops:     { top: '77.6%', left: '77.5%' },
 };
 
-function PositionMarker({ pos, fig, active, justPlaced, onClick, scale = 1 }) {
+function PositionMarker({ pos, fig, active, justPlaced, onClick, scale = 1, dropTarget, onDropFig }) {
   const f = FORMATION[pos.key];
   const sz = Math.round((fig ? 46 : 40) * scale);
+  const [over, setOver] = useStateBd(false);
+  const dropProps = dropTarget ? {
+    onDragOver: (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; if (!over) setOver(true); },
+    onDragEnter: (e) => { e.preventDefault(); setOver(true); },
+    onDragLeave: () => setOver(false),
+    onDrop: (e) => { e.preventDefault(); setOver(false); onDropFig && onDropFig(pos.key); },
+  } : {};
+  const dropping = dropTarget && over;     // a card is hovering this seat
+  const inviting = dropTarget && !over;    // a drag is live; this seat awaits it
   return (
-    <button onClick={onClick} style={{
+    <button onClick={onClick} {...dropProps} style={{
       position: 'absolute', top: f.top, left: f.left, transform: 'translate(-50%,-50%)',
       width: 'max-content',
       background: 'none', border: 'none', padding: 0, cursor: onClick ? 'pointer' : 'default',
-      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, zIndex: active ? 6 : 4,
+      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, zIndex: (active || dropTarget) ? 6 : 4,
     }}>
       <div style={{
         padding: 3,
-        opacity: fig || active ? 1 : 0.55,
-        animation: active ? 'woaPulseGold 1.4s ease-in-out infinite' : (justPlaced ? 'woaPop 0.5s ease both' : 'none'),
-        boxShadow: active ? '0 0 0 2px var(--gold-bright)' : 'none', borderRadius: 10,
+        opacity: fig || active || dropTarget ? 1 : 0.55,
+        animation: inviting ? 'woaPulseGold 0.8s ease-in-out infinite'
+          : (active ? 'woaPulseGold 1.4s ease-in-out infinite' : (justPlaced ? 'woaPop 0.5s ease both' : 'none')),
+        boxShadow: dropping ? '0 0 0 3px var(--gold-bright), 0 0 26px rgba(212,175,79,0.9)'
+          : active ? '0 0 0 2px var(--gold-bright)' : 'none',
+        borderRadius: 10,
+        transform: dropping ? 'scale(1.24)' : 'none',
+        // snappy, slightly overshooting snap so the drop feels tactile
+        transition: 'transform .15s cubic-bezier(.2,1.5,.4,1), box-shadow .1s ease',
       }}>
         <Crest fig={fig} dashed={!fig} placeholderAbbr={pos.abbr} size={sz} pos={pos.key} />
       </div>
       <span style={{
         fontFamily: 'var(--display)', fontSize: 8, fontWeight: 700, letterSpacing: '0.1em',
-        textTransform: 'uppercase', color: fig ? '#e7d3a8' : 'rgba(231,211,168,0.45)',
-        background: 'rgba(24,18,12,0.72)', padding: '1px 5px', borderRadius: 2,
+        textTransform: 'uppercase',
+        color: dropping ? '#1a120a' : (fig ? '#e7d3a8' : 'rgba(231,211,168,0.5)'),
+        background: dropping ? 'var(--gold-bright)' : 'rgba(24,18,12,0.72)',
+        padding: '1px 5px', borderRadius: 2,
         whiteSpace: 'nowrap', maxWidth: fig ? Math.round(88 * scale) : 'none', overflow: 'hidden', textOverflow: 'ellipsis',
-        border: '1px solid #6e5418',
-      }}>{fig ? fig.name.split(' ').slice(-1)[0] : pos.name}</span>
+        border: `1px solid ${dropping ? 'var(--gold-bright)' : '#6e5418'}`,
+        transition: 'background .1s ease, color .1s ease',
+      }}>{dropTarget && !fig ? (over ? 'Drop ✦' : 'Drop here') : (fig ? fig.name.split(' ').slice(-1)[0] : pos.name)}</span>
     </button>
   );
 }
@@ -218,7 +236,7 @@ function TerrainBackdrop({ terrain }) {
   }
 }
 
-export function FormationBoard({ squad, activePos, justPlaced, battleground, onSlotClick, height = 320 }) {
+export function FormationBoard({ squad, activePos, justPlaced, battleground, onSlotClick, draggingFig, onDropFig, height = 320 }) {
   const hall = (battleground && TERRAIN_HALL[battleground.key]) || ['#4e4639', '#2c2820'];
   // measure the board so the table stage keeps a true aspect ratio
   const boardRef = useRefBd(null);
@@ -296,6 +314,7 @@ export function FormationBoard({ squad, activePos, justPlaced, battleground, onS
             {WOAb.POSITIONS.map(p => (
               <PositionMarker key={p.key} pos={p} fig={squad[p.key]} scale={ms}
                 active={activePos === p.key} justPlaced={justPlaced === p.key}
+                dropTarget={Boolean(draggingFig) && activePos === p.key} onDropFig={onDropFig}
                 onClick={onSlotClick ? () => onSlotClick(p.key) : null} />
             ))}
           </div>
@@ -342,21 +361,20 @@ export function CompassDial({ size = 250, regionRot = 0, eraRot = 0, spinning, l
   // pointer geometry as % of the box so it tracks any size
   return (
     <div style={{ width: size, height: size, position: 'relative', margin: '0 auto' }}>
-      {/* REGION pointer — top, points down into the outer ring */}
-      <div style={{ position: 'absolute', top: -22, left: '50%', transform: 'translateX(-50%)', zIndex: 11, display: 'flex', flexDirection: 'column', alignItems: 'center', pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'var(--display)', fontWeight: 700, fontSize: 8.5, letterSpacing: '0.18em', color: 'var(--seal)', background: 'rgba(243,236,217,0.92)', border: '1px solid var(--gold)', borderRadius: 2, padding: '1px 6px', marginBottom: 1 }}>REGION</span>
-        <svg width="26" height="20" viewBox="0 0 26 20" style={{ display: 'block', filter: 'drop-shadow(0 2px 2px rgba(40,24,8,0.4))' }}>
+      {/* REGION arrow — top, points down into the outer ring at 12 o'clock. */}
+      <div style={{ position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)', zIndex: 11, pointerEvents: 'none' }}>
+        <svg width="24" height="18" viewBox="0 0 26 20" style={{ display: 'block', filter: 'drop-shadow(0 2px 2px rgba(40,24,8,0.4))' }}>
           <path d="M13,19 L4,3 Q3,0.5 6,0.5 H20 Q23,0.5 22,3 Z" fill="var(--seal)" stroke="var(--gold-bright)" strokeWidth="1.6" strokeLinejoin="round" />
           <circle cx="13" cy="5.5" r="2" fill="var(--gold-bright)" />
         </svg>
       </div>
-      {/* ERA pointer — bottom, points up into the inner ring */}
-      <div style={{ position: 'absolute', bottom: '16%', left: '50%', transform: 'translateX(-50%)', zIndex: 11, display: 'flex', flexDirection: 'column', alignItems: 'center', pointerEvents: 'none' }}>
-        <svg width="19" height="14" viewBox="0 0 22 17" style={{ display: 'block', filter: 'drop-shadow(0 -1px 2px rgba(40,24,8,0.4))' }}>
-          <path d="M11,0.5 L3,14 Q2,16.5 5,16.5 H17 Q20,16.5 19,14 Z" fill="#3a2c1c" stroke="var(--gold-bright)" strokeWidth="1.6" strokeLinejoin="round" />
+      {/* ERA arrow — sits near the bottom edge of the inner disc and points up
+          at the era wedge, kept low so it doesn't land on the era label. */}
+      <div style={{ position: 'absolute', top: '77%', left: '50%', transform: 'translateX(-50%)', zIndex: 11, pointerEvents: 'none' }}>
+        <svg width="17" height="13" viewBox="0 0 22 17" style={{ display: 'block', filter: 'drop-shadow(0 -1px 2px rgba(40,24,8,0.45))' }}>
+          <path d="M11,0.5 L3,14 Q2,16.5 5,16.5 H17 Q20,16.5 19,14 Z" fill="#3a2c1c" stroke="var(--gold-bright)" strokeWidth="1.7" strokeLinejoin="round" />
           <circle cx="11" cy="12.5" r="1.7" fill="var(--gold-bright)" />
         </svg>
-        <span style={{ fontFamily: 'var(--display)', fontWeight: 700, fontSize: 7.5, letterSpacing: '0.16em', color: '#3a2c1c', background: 'rgba(243,236,217,0.92)', border: '1px solid var(--gold)', borderRadius: 2, padding: '1px 5px', marginTop: 1 }}>ERA</span>
       </div>
       {/* outer region ring */}
       <svg width={size} height={size} viewBox="0 0 300 300" style={{

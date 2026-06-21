@@ -11,13 +11,71 @@
 
 * { box-sizing: border-box; }
 
+html,
+body,
+#root {
+  height: 100%;
+}
+
 body {
   margin: 0;
-  min-width: 1100px;
-  min-height: 100vh;
+  /* The campaign shell fills the window and the active screen flexes to
+     fit, so the page itself never scrolls — every screen reaches the
+     edges of the user's browser. */
+  overflow: hidden;
 }
 
 button { font: inherit; }
+
+/* ── Fill-the-window shell ───────────────────────────────────────
+   The desk wrapper is a full-height flex column: a fixed command bar
+   at the top, the active screen flexing to fill all remaining height,
+   and the cartouche footer pinned to the bottom. No page scroll. */
+.woa-desk {
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.desk-wrap {
+  height: 100%;
+  min-height: 0;
+  padding-bottom: 14px;
+}
+
+/* The active screen owns all the space between the bar and the foot. The
+   single grid row is constrained to that height (minmax(0,1fr)) so the
+   columns stretch to it and scroll inside themselves rather than growing
+   the page. */
+.desk-wrap > .desk-grid,
+.desk-wrap[data-screen='result'] .result-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  align-items: stretch;
+  grid-template-rows: minmax(0, 1fr);
+}
+
+/* The verdict screen wraps its headline + result grid in an extra block;
+   make that block a full-height column so the grid below can flex. */
+.desk-wrap[data-screen='result'] > :not(.desk-bar):not(.desk-foot) {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Each column fills the screen height and scrolls inside itself only if its
+   own content can't fit — the page never scrolls. */
+.rail-left,
+.rail-center,
+.rail-right,
+.result-grid > * {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+}
 
 .campaign-shell {
   width: min(1640px, calc(100vw - 48px));

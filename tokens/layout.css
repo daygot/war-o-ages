@@ -19,12 +19,14 @@
 /* cartouche footer — hugs the page foot when content is short */
 .desk-foot { margin-top: auto; padding-top: 26px; }
 
-/* top command bar */
+/* top command bar — 1fr/auto/1fr keeps the phase nav centred no matter how
+   wide the logo or the right-hand controls grow */
 .desk-bar {
-  display: flex; align-items: center; justify-content: space-between;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
   padding: 14px 4px 12px; position: sticky; top: 0; z-index: 20;
   background: linear-gradient(180deg, var(--paper) 60%, rgba(230,218,191,0));
 }
+.desk-bar > :last-child { justify-self: end; }
 .desk-steps { display: flex; align-items: center; gap: 0; }
 .desk-step {
   font-family: var(--display); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;

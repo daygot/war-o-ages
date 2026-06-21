@@ -1,6 +1,7 @@
 import React, { useState as dS, useEffect as dE, useRef as dR, useMemo as dM } from 'react';
+import { createPortal as dPortal } from 'react-dom';
 import { WOA as D } from './legacyData';
-import { Crest, StatRow, FigureCard, FigureRow, WaxSeal, Banner, IdeologyIcon, hexA } from './legacyComponents.jsx';
+import { Crest, StatRow, FigureRow, WaxSeal, Banner, IdeologyIcon, hexA, FigureHover } from './legacyComponents.jsx';
 import { FormationBoard, CompassDial, TerrainBackdrop, TERRAIN_HALL } from './legacyBoard.jsx';
 import { BookGlyph, BooksOverlay } from './legacyBooks.jsx';
 
@@ -31,10 +32,13 @@ const STEP_SCREENS = ['intro', 'spin', 'council', 'battle', 'result'];
 function DBar({ phaseIdx, battleground, right, onJump, onBooks }) {
   return (
     <div className="desk-bar">
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-        <Sigil size={46} />
-        <div className="deco" style={{ fontSize: 33, fontWeight: 900, lineHeight: 1, whiteSpace: 'nowrap' }}>War <span className="wo-o">O</span>' Ages</div>
-      </div>
+      <button type="button" onClick={onJump ? () => onJump('intro') : undefined}
+        title="Return to the home screen"
+        style={{ display: 'flex', alignItems: 'center', gap: 13, justifySelf: 'start',
+          background: 'none', border: 'none', padding: 0, cursor: onJump ? 'pointer' : 'default' }}>
+        <Sigil size={42} />
+        <h1 className="deco" style={{ fontSize: 30, fontWeight: 900, lineHeight: 1, margin: 0, whiteSpace: 'nowrap' }}>War <span className="wo-o">O</span>' Ages</h1>
+      </button>
       <div className="desk-steps">
         {PHASES.map((p, i) => (
           <button key={p} type="button"
@@ -101,6 +105,8 @@ const LEGION_TIERS = {
   major:   { pad: '16px 16px 15px', crest: 62, name: 21,   sub: 13,   gap: 13 },
   officer: { pad: '12px 14px',      crest: 48, name: 17,   sub: 12.5, gap: 11 },
   minor:   { pad: '11px 12px',      crest: 40, name: 15.5, sub: 12,   gap: 10 },
+  // compact — used where the legion must fit a column without scrolling
+  tight:   { pad: '6px 11px',       crest: 31, name: 13.5, sub: 10.5, gap: 8 },
 };
 const LEGION_TIER_OF = { commander: 'major', strategist: 'officer', general: 'officer', troops: 'minor', allies: 'minor' };
 
@@ -147,15 +153,18 @@ function LedgerRow({ pos, fig, active, tier, droppable, dragging, onDropFig }) {
 
 // The banner YOUR legion marches under — mirrors the enemy's plaque.
 // Unfilled until the War Council chooses a cause.
-function PlayerIdeologyPlaque({ def }) {
+function PlayerIdeologyPlaque({ def, compact }) {
+  const pad = compact ? '5px 10px' : '10px 13px';
+  const mb = compact ? 8 : 9;
+  const ic = compact ? 25 : 34;
   if (!def) {
     return (
-      <div className="panel" style={{ padding: '10px 13px', marginBottom: 9, display: 'flex', alignItems: 'center', gap: 10, opacity: 0.78 }}>
-        <div style={{ flexShrink: 0, width: 34, height: 34, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      <div className="panel" style={{ padding: pad, marginBottom: mb, display: 'flex', alignItems: 'center', gap: 10, opacity: 0.78 }}>
+        <div style={{ flexShrink: 0, width: ic, height: ic, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center',
           border: '1px dashed var(--line)', color: 'var(--ink-faint)', fontSize: 15 }}>⚑</div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="label" style={{ fontSize: 8.5 }}>Ideology</div>
-          <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-faint)', lineHeight: 1.2 }}>
+          <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: compact ? 12 : 13.5, color: 'var(--ink-faint)', lineHeight: 1.2 }}>
             — To be selected —
           </div>
         </div>
@@ -163,15 +172,15 @@ function PlayerIdeologyPlaque({ def }) {
     );
   }
   return (
-    <div className="panel" style={{ padding: '10px 13px', marginBottom: 9, display: 'flex', alignItems: 'center', gap: 10,
-      background: 'linear-gradient(180deg,#2a2017,#3a2c1c)', border: '1px solid var(--gold)', animation: 'woaPop 0.35s ease both' }}>
-      <div style={{ flexShrink: 0, width: 34, height: 34, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center',
+    <div className="panel" style={{ padding: pad, marginBottom: mb, display: 'flex', alignItems: 'center', gap: 10,
+      background: 'linear-gradient(180deg,#2a2017,#3a2c1c)', border: '1px solid var(--gold)' }}>
+      <div style={{ flexShrink: 0, width: ic, height: ic, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: 'rgba(212,175,79,0.14)', border: '1px solid rgba(212,175,79,0.45)' }}>
-        <IdeologyIcon icon={def.icon} size={21} color="var(--gold-bright)" strokeWidth={1.8} />
+        <IdeologyIcon icon={def.icon} size={compact ? 18 : 21} color="var(--gold-bright)" strokeWidth={1.8} />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div className="label" style={{ fontSize: 8.5, color: '#a8896a' }}>Ideology</div>
-        <div className="disp" style={{ fontSize: 16, color: '#e7d3a8', lineHeight: 1.1,
+        <div className="disp" style={{ fontSize: compact ? 14 : 16, color: '#e7d3a8', lineHeight: 1.1,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{def.name}</div>
       </div>
     </div>
@@ -182,7 +191,7 @@ function LegionLedger({ squad, activeKey, ideologyDef, hierarchy, draggingFig, o
   return (
     <div>
       <RailTitle color="var(--c-EASIA)">Your Legion</RailTitle>
-      <PlayerIdeologyPlaque def={ideologyDef || null} />
+      <PlayerIdeologyPlaque def={ideologyDef || null} compact />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
         {D.POSITIONS.map((p) => (
           <LedgerRow key={p.key} pos={p} fig={squad[p.key]} active={activeKey === p.key}
@@ -206,17 +215,17 @@ const ENEMY_SIGHTED = ['commander', 'strategist'];
 function EnemyIdeologyPlaque({ def, compact }) {
   if (!def) return null;
   return (
-    <div className="panel" style={{ padding: compact ? '10px 12px' : '11px 14px', marginBottom: compact ? 9 : 9,
-      display: 'flex', alignItems: 'center', gap: compact ? 10 : 12,
+    <div className="panel" style={{ padding: compact ? '5px 10px' : '11px 14px', marginBottom: compact ? 8 : 9,
+      display: 'flex', alignItems: 'center', gap: compact ? 9 : 12,
       background: 'linear-gradient(180deg,#2a2017,#3a2c1c)', border: '1px solid rgba(143,45,34,0.65)' }}>
-      <div style={{ flexShrink: 0, width: compact ? 32 : 34, height: compact ? 32 : 34, borderRadius: 3,
+      <div style={{ flexShrink: 0, width: compact ? 25 : 34, height: compact ? 25 : 34, borderRadius: 3,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: 'rgba(143,45,34,0.3)', border: '1px solid rgba(212,175,79,0.4)' }}>
-        <IdeologyIcon icon={def.icon} size={compact ? 19 : 21} color="#e0907f" strokeWidth={1.8} />
+        <IdeologyIcon icon={def.icon} size={compact ? 16 : 21} color="#e0907f" strokeWidth={1.8} />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div className="label" style={{ fontSize: compact ? 8 : 8.5, color: '#a8896a' }}>Ideology</div>
-        <div className="disp" style={{ fontSize: compact ? 14 : 16, color: '#e7d3a8', lineHeight: 1.1,
+        <div className="label" style={{ fontSize: compact ? 7.5 : 8.5, color: '#a8896a', lineHeight: 1.1 }}>Ideology</div>
+        <div className="disp" style={{ fontSize: compact ? 13 : 16, color: '#e7d3a8', lineHeight: 1.1,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{def.name}</div>
       </div>
     </div>
@@ -248,26 +257,27 @@ function EnemyRowMini({ pos, fig, revealed }) {
   );
 }
 
-function EnemyRow({ pos, fig, revealed }) {
+function EnemyRow({ pos, fig, revealed, tier }) {
+  const T = LEGION_TIERS[tier || 'minor'];
   if (!revealed || !fig) {
     return (
-      <div className="panel" style={{ padding: '11px 12px', display: 'flex', alignItems: 'center', gap: 10, opacity: 0.6 }}>
-        <Crest dashed placeholderAbbr={pos.abbr} size={40} pos={pos.key} />
+      <div className="panel" style={{ padding: T.pad, display: 'flex', alignItems: 'center', gap: T.gap, opacity: 0.6 }}>
+        <Crest dashed placeholderAbbr={pos.abbr} size={T.crest} pos={pos.key} />
         <div style={{ flex: 1 }}>
-          <div className="disp" style={{ fontSize: 15.5, color: 'var(--ink-faint)', letterSpacing: '0.05em' }}>Unknown</div>
-          <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 12, color: 'var(--ink-faint)' }}>Concealed by fog of war</div>
+          <div className="disp" style={{ fontSize: T.name, color: 'var(--ink-faint)', letterSpacing: '0.05em' }}>Unknown</div>
+          <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: T.sub, color: 'var(--ink-faint)' }}>Concealed by fog of war</div>
         </div>
         <div className="label" style={{ fontSize: 10, color: 'var(--ink-faint)' }}>{pos.abbr}</div>
       </div>
     );
   }
   return (
-    <div className="panel" style={{ padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10,
+    <div className="panel" style={{ padding: T.pad, display: 'flex', alignItems: 'center', gap: T.gap,
       borderLeft: `4px solid ${fig.regionInk}`, animation: 'woaFadeUp 0.4s ease both' }}>
-      <Crest fig={fig} size={40} pos={pos.key} dim />
+      <Crest fig={fig} size={T.crest} pos={pos.key} dim />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div className="disp" style={{ fontSize: 15.5, lineHeight: 1.05 }}>{fig.name}</div>
-        <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 12, color: 'var(--ink-soft)' }}>{pos.name} · {fig.eraName}</div>
+        <div className="disp" style={{ fontSize: T.name, lineHeight: 1.05 }}>{fig.name}</div>
+        <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: T.sub, color: 'var(--ink-soft)' }}>{pos.name} · {fig.eraName}</div>
       </div>
     </div>
   );
@@ -317,20 +327,21 @@ function NemesisCard({ fig, pos, major }) {
   );
 }
 
-function EnemyLedger({ enemy, revealAll, ideologyDef, compact, featured }) {
+function EnemyLedger({ enemy, revealAll, ideologyDef, compact, featured, hierarchy }) {
   const sighted = (p) => revealAll || ENEMY_SIGHTED.includes(p.key);
   const concealed = D.POSITIONS.filter((p) => !sighted(p)).length;
   return (
     <div>
       <RailTitle color="var(--seal)">Enemy Warband</RailTitle>
-      {!revealAll && <EnemyIdeologyPlaque def={ideologyDef} compact={compact} />}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+      {!revealAll && <EnemyIdeologyPlaque def={ideologyDef} compact />}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: hierarchy ? 9 : 9 }}>
         {D.POSITIONS.map((p) => featured && sighted(p) && enemy[p.key] ? (
           <NemesisCard key={p.key} fig={enemy[p.key]} pos={p} major={p.key === 'commander'} />
         ) : compact ? (
           <EnemyRowMini key={p.key} pos={p} fig={enemy[p.key]} revealed={sighted(p)} />
         ) : (
-          <EnemyRow key={p.key} pos={p} fig={enemy[p.key]} revealed={sighted(p)} />
+          <EnemyRow key={p.key} pos={p} fig={enemy[p.key]} revealed={sighted(p)}
+            tier={hierarchy ? LEGION_TIER_OF[p.key] : null} />
         ))}
       </div>
       {!revealAll && (
@@ -360,33 +371,36 @@ function RerollGlyph({ size = 15, color }) {
   );
 }
 
-function RerollChip({ label, ink, inkSpent, available, enabled, onUse }) {
+function RerollChip({ label, ink, inkSpent, available, enabled, onUse, compact }) {
   const c = available ? ink : inkSpent;
   return (
     <button type="button" disabled={!enabled} onClick={enabled ? onUse : undefined}
       title={available ? `Re-roll the ${label.toLowerCase()} ring — once per war` : `${label} re-roll spent`}
       style={{
-        display: 'flex', alignItems: 'center', gap: 6, padding: 2,
+        display: 'flex', alignItems: 'center', gap: compact ? 4 : 6, padding: 2,
         background: 'none', border: 'none',
-        fontFamily: 'var(--display)', fontSize: 11.5, fontWeight: 700,
-        letterSpacing: '0.12em', textTransform: 'uppercase',
+        fontFamily: 'var(--display)', fontSize: compact ? 9.5 : 11.5, fontWeight: 700,
+        letterSpacing: '0.1em', textTransform: 'uppercase',
         color: c, cursor: enabled ? 'pointer' : 'default',
         transition: 'color .25s',
       }}>
-      <RerollGlyph size={15} color={c} />
+      <RerollGlyph size={compact ? 12 : 15} color={c} />
       {label}
     </button>
   );
 }
 
-function RerollChips({ rerolls, canUse, onReroll, inline }) {
-  return (
-    <div style={inline
+function RerollChips({ rerolls, canUse, onReroll, inline, corner }) {
+  const wrap = corner
+    ? { position: 'absolute', top: 9, right: 12, zIndex: 8, display: 'flex', alignItems: 'center', gap: 11 }
+    : inline
       ? { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 18 }
-      : { position: 'absolute', top: 12, right: 14, zIndex: 8, display: 'flex', alignItems: 'center', gap: 16 }}>
-      <RerollChip label="Region" ink="#8f2d22" inkSpent="rgba(143,45,34,0.3)"
+      : { position: 'absolute', top: 12, right: 14, zIndex: 8, display: 'flex', alignItems: 'center', gap: 16 };
+  return (
+    <div style={wrap}>
+      <RerollChip label="Region" ink="#8f2d22" inkSpent="rgba(143,45,34,0.3)" compact={corner}
         available={rerolls.region} enabled={canUse && rerolls.region} onUse={() => onReroll('region')} />
-      <RerollChip label="Era" ink="#b08a2e" inkSpent="rgba(176,138,46,0.32)"
+      <RerollChip label="Era" ink="#b08a2e" inkSpent="rgba(176,138,46,0.32)" compact={corner}
         available={rerolls.era} enabled={canUse && rerolls.era} onUse={() => onReroll('era')} />
     </div>
   );
@@ -396,18 +410,7 @@ function RerollChips({ rerolls, canUse, onReroll, inline }) {
 function DIntro({ battleground, enemy, enemyIdeology, onBegin }) {
   const hall = (typeof TERRAIN_HALL !== 'undefined' && TERRAIN_HALL[battleground.key]) || ['#4e4639', '#2c2820'];
   return (
-    <div data-screen-label="Intro" style={{ paddingTop: 24 }}>
-      <div style={{ textAlign: 'center', marginBottom: 36 }}>
-        <Sigil size={72} />
-        <h1 className="deco" style={{ fontSize: 88, fontWeight: 900, letterSpacing: '0.03em', margin: '10px 0 6px', lineHeight: 0.95 }}>
-          War <span className="wo-o">O</span>' Ages
-        </h1>
-        <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 22, color: 'var(--ink-soft)', marginTop: 4 }}>
-          Assemble a legion across history. Spin the wheel. Conquer the ages.
-        </div>
-      </div>
-
-      <div className="desk-grid" style={{ alignItems: 'stretch' }}>
+    <div data-screen-label="Intro" className="desk-grid" style={{ alignItems: 'stretch' }}>
         {/* LEFT: empty formation preview — primes the player for what they're building */}
         <div className="rail-left">
           <LegionLedger squad={{}} activeKey={null} hierarchy />
@@ -458,7 +461,6 @@ function DIntro({ battleground, enemy, enemyIdeology, onBegin }) {
         <div className="rail-right">
           <EnemyLedger enemy={enemy} revealAll={false} ideologyDef={enemyIdeology} featured />
         </div>
-      </div>
     </div>
   );
 }
@@ -488,6 +490,7 @@ function SynergyRow({ s, delay = 0, fired }) {
 // ── Candidate card (selection phase) ─────────────────────────
 function CandidateCard({ fig, posKey, selected, onSelect, draggable, onDragStart, onDragEnd }) {
   return (
+    <FigureHover fig={fig} pos={posKey} block>
     <div role="button" tabIndex={0} onClick={onSelect}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(); } }}
       draggable={draggable || undefined} onDragStart={onDragStart} onDragEnd={onDragEnd}
@@ -537,6 +540,7 @@ function CandidateCard({ fig, posKey, selected, onSelect, draggable, onDragStart
         </div>
       </div>
     </div>
+    </FigureHover>
   );
 }
 
@@ -555,7 +559,7 @@ function DSpin({ squad, setSquad, battleground, exclude, onComplete, enemy, enem
   const [candidates, setCandidates] = dS([]);
   const [drawn, setDrawn] = dS(null);
   const [justPlaced, setJustPlaced] = dS(null);
-  const [hint, setHint] = dS(null);
+  const [, setHint] = dS(null); // a freshly-stirred synergy flags itself; the list re-reads from the squad
   const [dragFig, setDragFig] = dS(null); // candidate mid-drag toward the ledger
   const [rerollKind, setRerollKind] = dS(null); // which ring is mid-re-roll
   const timers = dR([]);
@@ -575,6 +579,7 @@ function DSpin({ squad, setSquad, battleground, exclude, onComplete, enemy, enem
     const ei = eras.findIndex((e) => e.key === landFig.era);
     const segR = 360 / regions.length, segE = 360 / eras.length;
     const targR = (-ri * segR % 360 + 360) % 360;
+    // Era settles at 6 o'clock, marked by its own arrow on the inner ring.
     const targE = ((180 - ei * segE) % 360 + 360) % 360;
     setRegionRot((r) => r + 360 * 4 + ((targR - r % 360) % 360 + 360) % 360);
     setEraRot((r) => r - 360 * 5 - ((r - targE) % 360 + 360) % 360);
@@ -696,177 +701,146 @@ function DSpin({ squad, setSquad, battleground, exclude, onComplete, enemy, enem
     window.addEventListener('resize', f);
     return () => window.removeEventListener('resize', f);
   }, []);
-  const rowH = Math.round(Math.max(440, Math.min(640, vh - 500)));
-  const dialSize = Math.max(216, Math.min(300, rowH - 250));
-  const stripDial = Math.min(264, Math.max(208, rowH - 200));
-  const gridMax = Math.max(200, vh - rowH - 234);
-  const ghostH = Math.max(150, Math.min(260, vh - rowH - 218));
+  // Map + wheel hold a tighter row so the candidate table's top row clears the
+  // fold; the dial keeps ONE size across every phase (no resize after the spin).
+  const rowH = Math.round(Math.max(344, Math.min(484, vh - 440)));
+  const dialSize = Math.max(214, Math.min(264, rowH - 104));
 
   return (
     <div data-screen-label="Muster" className="desk-grid foe-min">
-      {/* LEFT: your growing legion + selected figure preview */}
+      {/* LEFT: your legion in the same proportional hierarchy as the intro
+          (commander largest → officers → minor), then the synergies it stirs.
+          The whole rail scrolls if it ever runs long, rather than clipping. */}
       <div className="rail-left">
-        <LegionLedger squad={squad} activeKey={done ? null : pos.key}
+        <LegionLedger squad={squad} activeKey={done ? null : pos.key} hierarchy
           draggingFig={phase === 'selecting' ? dragFig : null}
           onDropFig={phase === 'selecting' ? () => { if (dragFig) place(dragFig); } : null} />
 
-        {/* Buff/debuff toasts surface on the LEFT, beside the legion they affect */}
-        {hint && (
-          <div className="panel" style={{ marginTop: 14, padding: '12px 16px', textAlign: 'center',
-            background: 'linear-gradient(180deg,#2a2017,#3a2c1c)', border: '1px solid var(--gold)',
-            animation: 'woaPop 0.4s ease both' }}>
-            <div className="caps" style={{ fontSize: 10, color: 'var(--gold-bright)' }}>Synergy Stirring</div>
-            <div className="disp" style={{ fontSize: 17, color: '#e7d3a8' }}>
-              {hint.name} <span style={{ color: '#9fd1a8' }}>{hint.pct > 0 ? '+' : ''}{hint.pct}%</span>
-            </div>
+        {/* Buffs & de-buffs surface here as the legion takes shape */}
+        <div style={{ marginTop: 16 }}>
+          <RailTitle color="var(--c-EASIA)">Synergies &amp; De-Buffs</RailTitle>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+            {currentSyn.length > 0 ? (
+              currentSyn.map((s, i) => <SynergyRow key={s.name} s={s} delay={i * 60} />)
+            ) : (
+              <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 12.5, color: 'var(--ink-faint)', padding: '2px 2px' }}>
+                None yet — fill the ranks to stir them.
+              </div>
+            )}
           </div>
-        )}
-
-        {drawn && (
-          <div style={{ marginTop: 16,
-            animation: phase === 'confirming'
-              ? 'woaSealIn 0.65s cubic-bezier(.2,1.2,.3,1) both'
-              : 'woaPop 0.45s ease both' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 11 }}>
-              <span className="caps" style={{ fontSize: 11, color: 'var(--gold)' }}>
-                {phase === 'confirming' ? '✦ Taking Position' : '✦ Selected'}
-              </span>
-              <span style={{ flex: 1, height: 1, background: 'var(--line)' }} />
-              <span style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 11, color: 'var(--ink-faint)' }}>
-                {D.REGIONS[drawn.region].name}
-              </span>
-            </div>
-            <FigureCard fig={drawn} positionName={`${pos.name} · ${drawn.eraName}`} pos={pos.key} />
-          </div>
-        )}
-
-        {/* Active synergies — persist as legion builds */}
-        {currentSyn.length > 0 && (
-          <div style={{ marginTop: 20, animation: 'woaFadeUp 0.4s ease both' }}>
-            <RailTitle color="var(--c-EASIA)">Active Synergies</RailTitle>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {currentSyn.map((s, i) => <SynergyRow key={s.name} s={s} delay={i * 60} />)}
-            </div>
-          </div>
-        )}
+        </div>
       </div>
 
-      {/* CENTER: war map + wheel side by side — the map holds the width, the wheel keeps a narrow column.
-          rowH stretches the pair into tall windows and is shared with the candidate grid below. */}
-      <div className="rail-center desk-mapwrap">
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 300px', gap: 18, alignItems: 'start' }}>
+      {/* CENTER: war map + wheel are a fixed (stationary) header row; ONLY the
+          Choose panel below scrolls. The whole column itself never scrolls. */}
+      <div className="rail-center desk-mapwrap" style={{ overflow: 'hidden' }}>
+        <div style={{ flexShrink: 0, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 300px', gap: 18, alignItems: 'start' }}>
           {/* The War Map — wide anchor, never moves */}
           <div>
             <RailTitle>The War Map</RailTitle>
             <FormationBoard squad={squad} activePos={done ? null : pos.key} justPlaced={justPlaced}
-              battleground={battleground} height={rowH} />
+              battleground={battleground} height={rowH}
+              draggingFig={phase === 'selecting' ? dragFig : null}
+              onDropFig={phase === 'selecting' ? () => { if (dragFig) place(dragFig); } : null} />
           </div>
 
           {/* The Wheel of Ages — narrow column, bottom-aligned to the map */}
           <div>
             <RailTitle color="var(--gold)">The Wheel of Ages</RailTitle>
 
-            {(phase === 'idle' || phase === 'spinning') && (
-              <div className="panel" style={{ padding: '10px 16px 14px', position: 'relative', height: rowH + 14,
-                boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
-                <div className="frame-rule" />
-                {/* re-rolls anchored in the clear air above the dial */}
-                <div style={{ paddingTop: 14, display: 'flex', justifyContent: 'center' }}>
-                  <RerollChips rerolls={rerolls} canUse={false} onReroll={reroll} inline />
+            {/* A single wheel panel for every phase — the dial keeps one constant
+                size and the text below it holds one constant hierarchy
+                (label / headline / subline). Only the words and their colour
+                change as the wheel turns, settles, or is re-rolled. */}
+            <div className="panel" style={{ padding: '12px 16px 14px', position: 'relative', height: rowH + 14,
+              boxSizing: 'border-box', display: 'flex', flexDirection: 'column', textAlign: 'center',
+              pointerEvents: phase === 'confirming' ? 'none' : 'auto' }}>
+              <div className="frame-rule" />
+
+              {/* re-rolls — small, tucked into the top-right corner */}
+              <RerollChips rerolls={rerolls} canUse={phase === 'selecting'} onReroll={reroll} corner />
+
+              {/* the dial — one constant size, centred in the constant space
+                  above a FIXED-height readout, so it never moves or resizes.
+                  Extra top padding keeps the needle clear of the re-roll chips. */}
+              <div style={{ flex: 1, minHeight: 0, padding: '16px 0 4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <CompassDial size={dialSize} regionRot={regionRot} eraRot={eraRot}
+                  spinning={phase === 'spinning' || phase === 'rerolling'}
+                  landedRegion={landed.region} landedEra={landed.era} />
+              </div>
+
+              {done ? (
+                <div style={{ height: 74, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-soft)' }}>
+                  The legion stands assembled.
                 </div>
-                <div style={{ flex: 1, minHeight: 0, padding: '10px 0 6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <CompassDial size={dialSize} regionRot={regionRot} eraRot={eraRot}
-                    spinning={phase === 'spinning'} landedRegion={landed.region} landedEra={landed.era} />
-                </div>
-                {!done ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'center', minHeight: 0 }}>
-                    <div className="label">Now drawing</div>
-                    <div className="disp" style={{ fontSize: 20, color: 'var(--ink)', margin: '2px 0 2px' }}>The {pos.name}</div>
-                    <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 12, color: 'var(--ink-soft)', lineHeight: 1.35,
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {pos.blurb}
-                    </div>
-                    <div style={{ marginTop: 10, paddingTop: 6 }}>
+              ) : (() => {
+                const spoken = phase === 'selecting' || phase === 'confirming' || phase === 'rerolling';
+                const headline = spoken ? (landedRegion ? landedRegion.name : '· · ·') : `The ${pos.name}`;
+                const headColor = spoken ? (landedRegion ? landedRegion.ink : 'var(--ink-faint)') : 'var(--ink)';
+                // Option C — no caps label: the landed region headlines, the era
+                // sits beneath it in italic; idle/spinning just show the rank.
+                const subline = spoken
+                  ? (phase === 'rerolling' ? '' : (landedEra ? landedEra.name : '· · ·'))
+                  : '';
+                return (
+                  <div style={{ height: 74, display: 'flex', flexDirection: 'column' }}>
+                    <div className="disp" style={{ fontSize: 20, lineHeight: 1.05, color: headColor, marginTop: 1,
+                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{headline}</div>
+                    {subline && (
+                      <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 12.5, color: 'var(--ink-soft)',
+                        marginTop: 2, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{subline}</div>
+                    )}
+                    <div style={{ marginTop: 'auto' }}>
                       {phase === 'idle' && (
-                        <button className="btn btn-gold" style={{ width: '100%', fontSize: 13.5, padding: '12px 8px' }} onClick={spin}>
+                        <button className="btn btn-gold" style={{ width: '100%', fontSize: 13.5, padding: '11px 8px' }} onClick={spin}>
                           Spin the Wheel
                         </button>
                       )}
                       {phase === 'spinning' && (
-                        <div className="caps" style={{ fontSize: 11, color: 'var(--seal)', padding: '13px 0', animation: 'woaFloat 1s ease-in-out infinite' }}>
+                        <div className="caps" style={{ fontSize: 11, color: 'var(--seal)', padding: '11px 0', animation: 'woaFloat 1s ease-in-out infinite' }}>
                           {landed.region ? (landed.era ? 'Summoning…' : 'Era settling…') : 'The wheel turns…'}
+                        </div>
+                      )}
+                      {phase === 'rerolling' && (
+                        <div className="caps" style={{ fontSize: 11, color: 'var(--seal)', padding: '11px 0', animation: 'woaFloat 1s ease-in-out infinite' }}>
+                          {rerollKind === 'region' ? 'The Region Ring Turns…' : 'The Era Ring Turns…'}
+                        </div>
+                      )}
+                      {phase === 'selecting' && (
+                        <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 12.5, color: 'var(--ink-faint)', padding: '8px 2px 2px', lineHeight: 1.3 }}>
+                          Click to preview — drag to a seat to lock in.
+                        </div>
+                      )}
+                      {phase === 'confirming' && (
+                        <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 13.5, color: 'var(--seal)', padding: '10px 0', animation: 'woaFloat 0.65s ease-in-out' }}>
+                          Taking position…
                         </div>
                       )}
                     </div>
                   </div>
-                ) : (
-                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-soft)', textAlign: 'center' }}>
-                    The legion stands assembled.
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* After the wheel settles — the dial holds its column; verdict + confirm live with it.
-                During a re-roll the dial spins its single ring in place. */}
-            {(phase === 'selecting' || phase === 'confirming' || phase === 'rerolling') && (
-              <div className="panel" style={{ padding: '10px 16px 14px', position: 'relative', height: rowH + 14,
-                boxSizing: 'border-box', display: 'flex', flexDirection: 'column', textAlign: 'center',
-                pointerEvents: phase === 'confirming' ? 'none' : 'auto' }}>
-                <div className="frame-rule" />
-                {/* re-rolls anchored in the clear air above the dial */}
-                <div style={{ paddingTop: 14, display: 'flex', justifyContent: 'center' }}>
-                  <RerollChips rerolls={rerolls} canUse={phase === 'selecting'} onReroll={reroll} inline />
-                </div>
-                <div style={{ flex: 1, minHeight: 0, padding: '8px 0 6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <CompassDial size={stripDial} regionRot={regionRot} eraRot={eraRot}
-                    spinning={phase === 'rerolling'} landedRegion={landed.region} landedEra={landed.era} />
-                </div>
-                <div className="caps" style={{ fontSize: 10, color: phase === 'rerolling' ? 'var(--seal)' : 'var(--gold)' }}>
-                  {phase === 'rerolling'
-                    ? (rerollKind === 'region' ? 'The Region Ring Turns…' : 'The Era Ring Turns…')
-                    : 'The Wheel Has Spoken'}
-                </div>
-                <div style={{ margin: '5px 0 2px' }}>
-                  <div className="disp" style={{ fontSize: 22, lineHeight: 1.15, color: landedRegion ? landedRegion.ink : 'var(--ink-faint)' }}>
-                    {landedRegion ? landedRegion.name : '· · ·'}
-                  </div>
-                  <div className="disp" style={{ fontSize: 16.5, lineHeight: 1.2, color: landedEra ? 'var(--ink-soft)' : 'var(--ink-faint)', marginTop: 3 }}>
-                    {landedEra ? landedEra.name : '· · ·'}
-                  </div>
-                </div>
-                <div style={{ marginTop: 12 }}>
-                  {drawn && phase === 'selecting' && (
-                    <button className="btn btn-primary" style={{ width: '100%', fontSize: 14, padding: '12px 8px' }} onClick={() => place()}>
-                      Take Position ✦
-                    </button>
-                  )}
-                  {phase === 'confirming' && (
-                    <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 13.5, color: 'var(--seal)', padding: '12px 0', animation: 'woaFloat 0.65s ease-in-out' }}>
-                      Taking position…
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+                );
+              })()}
+            </div>
           </div>
         </div>
 
-        {/* Candidate selection — full-width beneath the map + wheel, like a muster table */}
+        {/* Candidate selection — fills the space below the fixed map+wheel and is
+            the ONLY part of the column that scrolls (its inner grid). */}
         {(phase === 'selecting' || phase === 'confirming') && candidates.length > 0 && (
           <div className="panel" style={{ padding: '12px 16px 14px', position: 'relative', marginTop: 12,
+            flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column',
             pointerEvents: phase === 'confirming' ? 'none' : 'auto' }}>
             <div className="frame-rule" />
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 10, padding: '0 2px' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 10, padding: '0 2px', flexShrink: 0 }}>
               <div className="disp" style={{ fontSize: 19, whiteSpace: 'nowrap' }}>Choose your {pos.name}</div>
               <span style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, var(--line) 0%, var(--line) 55%, transparent 100%)', alignSelf: 'center' }} />
               <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 12.5, color: 'var(--ink-faint)', whiteSpace: 'nowrap' }}>
-                {drawn ? 'Drag to your legion, or confirm with Take Position ↗' : 'Select to preview — or drag a figure onto your legion to lock them in'}
+                Click to preview — drag onto a seat or your legion to lock in
               </div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 10,
-              maxHeight: gridMax, overflowY: 'auto' }}>
+              flex: 1, minHeight: 0, overflowY: 'auto', alignContent: 'start' }}>
               {candidates.map(fig => (
                 <CandidateCard key={fig.id} fig={fig} posKey={pos.key}
                   selected={drawn ? drawn.name === fig.name : false}
@@ -875,6 +849,13 @@ function DSpin({ squad, setSquad, battleground, exclude, onComplete, enemy, enem
                   onDragStart={(e) => {
                     e.dataTransfer.setData('text/plain', fig.name);
                     e.dataTransfer.effectAllowed = 'move';
+                    // Drag just the crest badge — it reads as the piece dropping
+                    // into a table seat rather than the whole card.
+                    const badge = e.currentTarget.firstElementChild;
+                    if (badge) {
+                      const r = badge.getBoundingClientRect();
+                      e.dataTransfer.setDragImage(badge, r.width / 2, r.height / 2);
+                    }
                     requestAnimationFrame(() => { selectCandidate(fig); setDragFig(fig); });
                   }}
                   onDragEnd={() => setDragFig(null)} />
@@ -887,9 +868,9 @@ function DSpin({ squad, setSquad, battleground, exclude, onComplete, enemy, enem
             anatomy (same header row, same card grid) so the swap feels like the
             same furniture filling in rather than appearing. */}
         {!((phase === 'selecting' || phase === 'confirming') && candidates.length > 0) && (
-          <div style={{ marginTop: 12, animation: 'woaFadeUp 0.5s ease both' }}>
+          <div style={{ marginTop: 12, flex: 1, minHeight: 0, display: 'flex', animation: 'woaFadeUp 0.5s ease both' }}>
             <div style={{ border: '1.5px dashed rgba(107,85,50,0.42)', borderRadius: 3,
-              padding: '12px 16px 14px', height: ghostH, boxSizing: 'border-box',
+              padding: '12px 16px 14px', flex: 1, minHeight: 0, boxSizing: 'border-box',
               display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, padding: '0 2px' }}>
                 <span className="disp" style={{ fontSize: 19, color: 'var(--ink-faint)', whiteSpace: 'nowrap', opacity: 0.75 }}>The Muster Table</span>
@@ -924,9 +905,9 @@ function DSpin({ squad, setSquad, battleground, exclude, onComplete, enemy, enem
         )}
       </div>
 
-      {/* RIGHT: enemy warband (persistent, minimized — focus stays on the muster) */}
+      {/* RIGHT: enemy warband — same proportional hierarchy as your legion */}
       <div className="rail-right">
-        <EnemyLedger enemy={enemy} revealAll={false} ideologyDef={enemyIdeology} compact />
+        <EnemyLedger enemy={enemy} revealAll={false} ideologyDef={enemyIdeology} hierarchy />
       </div>
     </div>
   );
@@ -938,27 +919,26 @@ function DIdeologyRow({ def, squad, selected, onSelect }) {
   const pos = eff.pct >= 0;
   return (
     <button type="button" onClick={onSelect} className="panel ideo-row" style={{
-      scrollSnapAlign: 'center', textAlign: 'left', cursor: 'pointer', padding: '11px 13px',
-      display: 'flex', gap: 12, alignItems: 'center', width: '100%',
+      textAlign: 'left', cursor: 'pointer', padding: '8px 10px',
+      display: 'flex', gap: 9, alignItems: 'center', width: '100%',
       border: selected ? '1px solid var(--gold)' : '1px solid var(--panel-edge)',
       boxShadow: selected ? '0 0 0 2px var(--gold-bright)' : undefined,
       background: selected ? 'linear-gradient(180deg, rgba(212,175,79,0.18), rgba(255,250,235,0.4))' : undefined,
-      transform: selected ? 'scale(1.012)' : 'none',
-      transition: 'box-shadow .15s, border-color .15s, transform .15s',
+      transition: 'box-shadow .15s, border-color .15s',
     }}>
-      <div style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      <div style={{ flexShrink: 0, width: 32, height: 32, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: selected ? 'var(--seal)' : 'rgba(120,96,54,0.10)',
         border: `1px solid ${selected ? 'var(--gold)' : 'var(--line)'}` }}>
-        <IdeologyIcon icon={def.icon} size={24} color={selected ? '#f4e6c9' : 'var(--ink-soft)'} strokeWidth={1.7} />
+        <IdeologyIcon icon={def.icon} size={19} color={selected ? '#f4e6c9' : 'var(--ink-soft)'} strokeWidth={1.7} />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
-          <span className="disp" style={{ fontSize: 17, color: 'var(--ink)', lineHeight: 1.05 }}>{def.name}</span>
-          <span className="disp" style={{ fontSize: 15, color: pos ? 'var(--c-EASIA)' : 'var(--seal)', whiteSpace: 'nowrap' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 6 }}>
+          <span className="disp" style={{ fontSize: 14.5, color: 'var(--ink)', lineHeight: 1.05, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{def.name}</span>
+          <span className="disp" style={{ fontSize: 14, color: pos ? 'var(--c-EASIA)' : 'var(--seal)', whiteSpace: 'nowrap', flexShrink: 0 }}>
             {pos ? '+' : ''}{eff.pct}%
           </span>
         </div>
-        <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 12.5, color: 'var(--ink-soft)', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 11, color: 'var(--ink-soft)', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {def.tenet}
         </div>
       </div>
@@ -969,16 +949,17 @@ function DIdeologyRow({ def, squad, selected, onSelect }) {
 function DIdeologyWheel({ squad, ideology, setIdeology }) {
   let lastGroup = null;
   return (
-    <div style={{ position: 'relative' }}>
-      <div className="ideo-wheel" style={{ maxHeight: 360, overflowY: 'auto', scrollSnapType: 'y proximity',
-        display: 'flex', flexDirection: 'column', gap: 8, padding: '4px 14px 4px 4px' }}>
+    <div style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <div className="ideo-wheel" style={{ flex: 1, minHeight: 0, overflowY: 'auto',
+        display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(208px, 1fr))', gap: 8,
+        alignContent: 'start', padding: '4px 12px 6px 4px' }}>
         {D.IDEOLOGIES.map((d) => {
           const head = d.group !== lastGroup ? d.group : null;
           lastGroup = d.group;
           return (
             <React.Fragment key={d.key}>
               {head && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: head === D.IDEOLOGIES[0].group ? '2px 0 0' : '8px 0 0' }}>
+                <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 8, margin: head === D.IDEOLOGIES[0].group ? '2px 0 0' : '6px 0 0' }}>
                   <span className="caps" style={{ fontSize: 10, color: 'var(--gold)' }}>{head}</span>
                   <span style={{ flex: 1, height: 1, background: 'var(--line)' }} />
                 </div>
@@ -999,9 +980,9 @@ function DIdeologyWheel({ squad, ideology, setIdeology }) {
 // the commander centre (tallest, gold-trimmed), strategist & general
 // flanking at officer size, troops & allies outermost and smallest.
 const PENNANT_TIERS = {
-  commander: { w: 124, h: 148, tail: 28, box: 168, crest: 62, crestTop: 31, name: 16,   stroke: 2,   ring: 3.4, star: 1.15 },
-  officer:   { w: 106, h: 126, tail: 23, box: 144, crest: 52, crestTop: 28, name: 14.5, stroke: 1.7, ring: 3,   star: 1 },
-  minor:     { w: 90,  h: 104, tail: 19, box: 122, crest: 44, crestTop: 24, name: 13,   stroke: 1.4, ring: 2.8, star: 0.8 },
+  commander: { w: 86, h: 102, tail: 19, box: 114, crest: 43, crestTop: 21, name: 12,   stroke: 1.5,  ring: 2.5,  star: 0.85 },
+  officer:   { w: 74, h: 88,  tail: 16, box: 100, crest: 36, crestTop: 19, name: 10.5, stroke: 1.35, ring: 2.25, star: 0.75 },
+  minor:     { w: 63, h: 73,  tail: 13, box: 85,  crest: 32, crestTop: 17, name: 10,   stroke: 1.1,  ring: 2.1,  star: 0.6 },
 };
 
 function CouncilPennant({ fig, pos, tier = 'minor' }) {
@@ -1059,17 +1040,17 @@ function CouncilBanner({ squad }) {
   return (
     <div className="panel" style={{ padding: 6, position: 'relative' }}>
       <div style={{ position: 'relative', borderRadius: 2, overflow: 'hidden', border: '1px solid var(--panel-edge)',
-        background: 'radial-gradient(110% 140% at 50% 0%, #3a2c1c 0%, #241b10 80%)', padding: '26px 18px 16px' }}>
+        background: 'radial-gradient(110% 140% at 50% 0%, #3a2c1c 0%, #241b10 80%)', padding: '20px 18px 12px' }}>
         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none',
           background: 'radial-gradient(circle at 3% 10%, rgba(255,140,20,0.13), transparent 30%), radial-gradient(circle at 97% 10%, rgba(255,140,20,0.13), transparent 30%)' }} />
         {/* the lance the standards hang from */}
-        <div style={{ position: 'absolute', top: 33, left: 26, right: 26, height: 5, borderRadius: 3,
+        <div style={{ position: 'absolute', top: 26, left: 26, right: 26, height: 5, borderRadius: 3,
           background: 'linear-gradient(180deg, #a8843c, #6e5418)', boxShadow: '0 2px 4px rgba(0,0,0,0.45)' }} />
-        <div style={{ position: 'absolute', top: 29.5, left: 15, width: 12, height: 12, borderRadius: '50%',
+        <div style={{ position: 'absolute', top: 22.5, left: 15, width: 12, height: 12, borderRadius: '50%',
           background: 'radial-gradient(circle at 35% 30%, #d4af4f, #8a6c20)', border: '1px solid #6e5418' }} />
-        <div style={{ position: 'absolute', top: 29.5, right: 15, width: 12, height: 12, borderRadius: '50%',
+        <div style={{ position: 'absolute', top: 22.5, right: 15, width: 12, height: 12, borderRadius: '50%',
           background: 'radial-gradient(circle at 35% 30%, #d4af4f, #8a6c20)', border: '1px solid #6e5418' }} />
-        <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', gap: 8, paddingTop: 10 }}>
+        <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', gap: 8, paddingTop: 6 }}>
           {order.map((k) => <CouncilPennant key={k} fig={squad[k]} pos={posByKey[k]} tier={tierOf[k]} />)}
         </div>
       </div>
@@ -1086,26 +1067,21 @@ function DCouncil({ squad, battleground, ideology, setIdeology, onMarch, enemy, 
     <div data-screen-label="Council" className="desk-grid foe-min">
       {/* LEFT: completed legion + its ideology & synergies */}
       <div className="rail-left">
-        <LegionLedger squad={squad} ideologyDef={selDef} />
+        <LegionLedger squad={squad} ideologyDef={selDef} hierarchy />
 
         <div style={{ marginTop: 22 }}>
           <RailTitle color="var(--gold)">Ideology</RailTitle>
           {selDef ? (
-            <div className="panel" style={{ padding: '14px 16px', marginBottom: 14,
+            <div className="panel" style={{ padding: '8px 12px', marginBottom: 12,
               background: 'linear-gradient(180deg,#2a2017,#3a2c1c)', border: '1px solid var(--gold)',
-              animation: 'woaPop 0.35s ease both' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <IdeologyIcon icon={selDef.icon} size={28} color="var(--gold-bright)" strokeWidth={1.8} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="disp" style={{ fontSize: 18, color: '#e7d3a8', lineHeight: 1.05 }}>{selDef.name}</div>
-                  <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 12, color: '#b89c6a' }}>{selEff.note}</div>
-                </div>
-                <div className="disp" style={{ fontSize: 22, color: selEff.pct >= 0 ? '#9fd1a8' : '#e0907f', whiteSpace: 'nowrap' }}>
-                  {selEff.pct >= 0 ? '+' : ''}{selEff.pct}%
-                </div>
+              display: 'flex', alignItems: 'center', gap: 10 }}>
+              <IdeologyIcon icon={selDef.icon} size={20} color="var(--gold-bright)" strokeWidth={1.8} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="disp" style={{ fontSize: 14.5, color: '#e7d3a8', lineHeight: 1.05, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{selDef.name}</div>
+                <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 11, color: '#b89c6a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{selEff.note}</div>
               </div>
-              <div style={{ fontFamily: 'var(--serif)', fontSize: 12, color: '#cdb98f', marginTop: 9, lineHeight: 1.45 }}>
-                {selDef.blurb}
+              <div className="disp" style={{ fontSize: 17, color: selEff.pct >= 0 ? '#9fd1a8' : '#e0907f', whiteSpace: 'nowrap' }}>
+                {selEff.pct >= 0 ? '+' : ''}{selEff.pct}%
               </div>
             </div>
           ) : (
@@ -1124,47 +1100,44 @@ function DCouncil({ squad, battleground, ideology, setIdeology, onMarch, enemy, 
               No synergies stirred — your legion fights on raw merit.
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
               {syn.map((s, i) => <SynergyRow key={s.name} s={s} delay={i * 70} />)}
             </div>
           )}
         </div>
       </div>
 
-      {/* CENTER: ideology picker + march */}
-      <div className="rail-center desk-mapwrap">
+      {/* CENTER: ideology picker + march — a flex column so the banner, the
+          headings and the march button stay on screen and ONLY the ideology
+          list scrolls within the space that's left. */}
+      <div className="rail-center desk-mapwrap" style={{ overflow: 'hidden' }}>
         <RailTitle color="var(--gold)">The War Council</RailTitle>
         <CouncilBanner squad={squad} />
-        <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 15, color: 'var(--ink-soft)', margin: '14px 0 16px', textAlign: 'center' }}>
+        <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-soft)', margin: '8px 0 10px', textAlign: 'center' }}>
           Your legion stands assembled. Choose the banner they fight for.
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 11 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
           <span className="caps" style={{ fontSize: 12, color: 'var(--gold)' }}>Choose an Ideology</span>
           <span style={{ flex: 1, height: 1, background: 'var(--line)' }} />
           <span style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 12, color: 'var(--ink-faint)' }}>
             scroll · effect on your legion
           </span>
         </div>
-        <div className="panel" style={{ padding: 6, position: 'relative' }}>
+        <div className="panel" style={{ padding: 6, position: 'relative', flex: 1, minHeight: 80, display: 'flex', flexDirection: 'column' }}>
           <div className="frame-rule" />
           <DIdeologyWheel squad={squad} ideology={ideology} setIdeology={setIdeology} />
         </div>
         <button className="btn btn-primary" disabled={!ideology}
-          style={{ width: '100%', marginTop: 20, fontSize: 18, padding: '18px',
+          style={{ width: '100%', marginTop: 12, flexShrink: 0, fontSize: 17, padding: '15px',
             opacity: ideology ? 1 : 0.5, cursor: ideology ? 'pointer' : 'not-allowed' }}
           onClick={ideology ? onMarch : undefined}>
           ⚔ March to War
         </button>
-        {!ideology && (
-          <div style={{ textAlign: 'center', fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 12.5, color: 'var(--ink-faint)', marginTop: 9 }}>
-            Choose an ideology before you march.
-          </div>
-        )}
       </div>
 
-      {/* RIGHT: enemy warband — minimized, banner flown */}
+      {/* RIGHT: enemy warband — same proportional hierarchy */}
       <div className="rail-right">
-        <EnemyLedger enemy={enemy} revealAll={false} ideologyDef={enemyIdeology} compact />
+        <EnemyLedger enemy={enemy} revealAll={false} ideologyDef={enemyIdeology} hierarchy />
       </div>
     </div>
   );
@@ -1253,17 +1226,18 @@ function DBattle({ player, enemy, battleground, onReveal, onGo }) {
       {/* LEFT: your legion — roster stretches to anchor against the centre column */}
       <div className="rail-left" style={{ display: 'flex', flexDirection: 'column' }}>
         <RailTitle color="var(--c-EASIA)">Your Legion</RailTitle>
-        <PlayerIdeologyPlaque def={pDef} />
+        <PlayerIdeologyPlaque def={pDef} compact />
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 9 }}>
           {D.POSITIONS.map((pp) => {
             const fig = player.squad[pp.key];
+            const T = LEGION_TIERS[LEGION_TIER_OF[pp.key]];
             return (
-              <div key={pp.key} className="panel" style={{ flex: 1, minHeight: 58, padding: '9px 12px', display: 'flex', alignItems: 'center', gap: 10,
+              <div key={pp.key} className="panel" style={{ flex: 1, minHeight: 50, padding: '9px 12px', display: 'flex', alignItems: 'center', gap: T.gap,
                 borderLeft: fig ? `4px solid ${fig.regionInk}` : '4px solid var(--line)' }}>
-                <Crest fig={fig} size={40} pos={pp.key} />
+                <Crest fig={fig} size={T.crest} pos={pp.key} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="disp" style={{ fontSize: 15, lineHeight: 1.1 }}>{fig ? fig.name : '—'}</div>
-                  <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 11.5, color: 'var(--ink-soft)' }}>{pp.name}{fig ? ` · ${fig.eraName}` : ''}</div>
+                  <div className="disp" style={{ fontSize: T.name, lineHeight: 1.1 }}>{fig ? fig.name : '—'}</div>
+                  <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: T.sub, color: 'var(--ink-soft)' }}>{pp.name}{fig ? ` · ${fig.eraName}` : ''}</div>
                 </div>
               </div>
             );
@@ -1365,17 +1339,18 @@ function DBattle({ player, enemy, battleground, onReveal, onGo }) {
       {/* RIGHT: enemy forces — fog lifts at battle start */}
       <div className="rail-right" style={{ display: 'flex', flexDirection: 'column' }}>
         <RailTitle color="var(--seal)">Enemy Forces</RailTitle>
-        <EnemyIdeologyPlaque def={eDef} />
+        <EnemyIdeologyPlaque def={eDef} compact />
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 9 }}>
           {D.POSITIONS.map((pp) => {
             const fig = enemy.squad[pp.key];
+            const T = LEGION_TIERS[LEGION_TIER_OF[pp.key]];
             return (
-              <div key={pp.key} className="panel" style={{ flex: 1, minHeight: 58, padding: '9px 12px', display: 'flex', alignItems: 'center', gap: 10,
+              <div key={pp.key} className="panel" style={{ flex: 1, minHeight: 50, padding: '9px 12px', display: 'flex', alignItems: 'center', gap: T.gap,
                 borderLeft: fig ? `4px solid ${fig.regionInk}` : '4px solid var(--line)' }}>
-                <Crest fig={fig} size={40} pos={pp.key} dim />
+                <Crest fig={fig} size={T.crest} pos={pp.key} dim />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="disp" style={{ fontSize: 15, lineHeight: 1.1 }}>{fig ? fig.name : '—'}</div>
-                  <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 11.5, color: 'var(--ink-soft)' }}>{pp.name}{fig ? ` · ${fig.eraName}` : ''}</div>
+                  <div className="disp" style={{ fontSize: T.name, lineHeight: 1.1 }}>{fig ? fig.name : '—'}</div>
+                  <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: T.sub, color: 'var(--ink-soft)' }}>{pp.name}{fig ? ` · ${fig.eraName}` : ''}</div>
                 </div>
               </div>
             );
@@ -1383,8 +1358,9 @@ function DBattle({ player, enemy, battleground, onReveal, onGo }) {
         </div>
       </div>
 
-      {/* fate interjects — the dispatch is read HERE; how the tally settles is saved for the verdict */}
-      {twistPopup && (
+      {/* fate interjects — the dispatch is read HERE; how the tally settles is saved for the verdict.
+          Portaled to <body> so it escapes the scaled fit-canvas and covers the full viewport. */}
+      {twistPopup && dPortal(
         <div style={{ position: 'fixed', inset: 0, zIndex: 90, background: 'rgba(20,14,6,0.62)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'woaFadeUp 0.3s ease both' }}>
           <div className="panel" style={{ width: 480, maxWidth: '88vw', padding: '30px 34px 26px', textAlign: 'center',
@@ -1396,18 +1372,23 @@ function DBattle({ player, enemy, battleground, onReveal, onGo }) {
             <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 17, color: 'var(--ink)', lineHeight: 1.5, textWrap: 'pretty' }}>
               {twistPopup.text}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, margin: '16px 0 4px' }}>
-              <span className="disp" style={{ fontSize: 30, lineHeight: 1, color: twistPopup.pct >= 0 ? 'var(--c-EASIA)' : 'var(--seal)' }}>
-                {twistPopup.pct > 0 ? '+' : ''}{twistPopup.pct}%
-              </span>
-              <span style={{ fontFamily: 'var(--display)', fontSize: 10, fontWeight: 700, letterSpacing: '0.12em',
-                textTransform: 'uppercase', padding: '4px 9px', borderRadius: 2,
-                color: twistPopup.side === 'player' ? 'var(--c-EASIA)' : 'var(--seal)',
-                border: `1px solid ${twistPopup.side === 'player' ? 'var(--c-EASIA)' : 'var(--seal)'}`,
-                background: 'rgba(255,250,235,0.6)' }}>
-                {twistPopup.side === 'player' ? 'Your Legion' : 'Enemy Forces'}
-              </span>
-            </div>
+            {/* Colour by whether the dispatch HELPS YOU, not by the raw sign:
+                the enemy losing strength is good for you (green), and vice versa. */}
+            {(() => {
+              const favInk = twistPopup.helpsYou ? 'var(--c-EASIA)' : 'var(--seal)';
+              return (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, margin: '16px 0 4px' }}>
+                  <span className="disp" style={{ fontSize: 30, lineHeight: 1, color: favInk }}>
+                    {twistPopup.pct > 0 ? '+' : ''}{twistPopup.pct}%
+                  </span>
+                  <span style={{ fontFamily: 'var(--display)', fontSize: 10, fontWeight: 700, letterSpacing: '0.12em',
+                    textTransform: 'uppercase', padding: '4px 9px', borderRadius: 2,
+                    color: favInk, border: `1px solid ${favInk}`, background: 'rgba(255,250,235,0.6)' }}>
+                    {twistPopup.side === 'player' ? 'Your Legion' : 'Enemy Forces'} · {twistPopup.helpsYou ? 'In your favour' : 'Against you'}
+                  </span>
+                </div>
+              );
+            })()}
             <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 12.5, color: 'var(--ink-faint)' }}>
               How the tally settles… the verdict will tell.
             </div>
@@ -1415,7 +1396,8 @@ function DBattle({ player, enemy, battleground, onReveal, onGo }) {
               March to the Verdict ✦
             </button>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );
@@ -1461,10 +1443,14 @@ function makeTwist(scored) {
 
 const ResultCard = React.forwardRef(function ResultCard({ player, enemy, battleground, win, grade, twist }, ref) {
   const bgPct = Math.round((player.bg - 1) * 100);
+  // `fav` = whether the line is in YOUR favour. For your own synergies and the
+  // field, that's just a positive %; for the twist it depends on whose side it
+  // hit (the enemy losing strength is in your favour even though its % is
+  // negative). Colour is driven by `fav`, never the raw sign.
   const reckoning = [
-    ...player.syn.map(s => ({ ...s, tag: s.kind === 'ideology' ? 'Ideology' : (s.pct >= 0 ? 'Synergy' : 'De-Buff') })),
-    ...(bgPct !== 0 ? [{ name: battleground.name, pct: bgPct, note: 'The ground itself took a side', tag: 'Field' }] : []),
-    ...(twist ? [{ name: 'Twist of Fate', pct: twist.pct, note: twist.text, tag: 'Fate',
+    ...player.syn.map(s => ({ ...s, fav: s.pct >= 0, tag: s.kind === 'ideology' ? 'Ideology' : (s.pct >= 0 ? 'Synergy' : 'De-Buff') })),
+    ...(bgPct !== 0 ? [{ name: battleground.name, pct: bgPct, note: 'The ground itself took a side', tag: 'Field', fav: bgPct >= 0 }] : []),
+    ...(twist ? [{ name: 'Twist of Fate', pct: twist.pct, note: twist.text, tag: 'Fate', fav: twist.helpsYou,
       side: twist.side === 'player' ? 'Your Legion' : 'The Enemy' }] : []),
   ];
   return (
@@ -1474,15 +1460,19 @@ const ResultCard = React.forwardRef(function ResultCard({ player, enemy, battleg
       border: '2px solid #6e5418',
       boxShadow: '0 10px 30px rgba(60,40,16,0.35)', padding: 3,
     }}>
-      <div style={{ border: '1px solid var(--gold)', borderRadius: 2, padding: '16px 17px 14px', position: 'relative' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div>
-            <div className="deco" style={{ fontSize: 17, fontWeight: 900, color: 'var(--ink)', lineHeight: 1 }}>War <span className="wo-o">O</span>' Ages</div>
-            <div className="label" style={{ fontSize: 8, marginTop: 2 }}>{battleground.name} · Daily Battlefield</div>
+      <div style={{ border: '1px solid var(--gold)', borderRadius: 2, padding: '15px 17px 14px', position: 'relative' }}>
+        {/* the verdict itself headlines the placard */}
+        <div style={{ textAlign: 'center' }}>
+          <div className="deco" style={{ fontSize: 'clamp(30px, 4.6vh, 42px)', fontWeight: 900, lineHeight: 1,
+            color: win ? 'var(--seal)' : 'var(--ink-soft)', transition: 'color .4s' }}>
+            {win ? 'Victory' : 'Defeat'}
           </div>
-          <Sigil size={28} />
+          <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-soft)', marginTop: 3 }}>
+            {win ? 'History will remember your legion.' : 'The chronicles record a noble loss.'}
+          </div>
+          <div className="label" style={{ fontSize: 8, marginTop: 6 }}>War O&apos; Ages · {battleground.name} · Daily Battlefield</div>
         </div>
-        <div className="hr-rule" style={{ margin: '12px 0' }} />
+        <div className="hr-rule" style={{ margin: '11px 0' }} />
         <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', textAlign: 'center' }}>
           <div>
             <div className="label" style={{ fontSize: 9 }}>You</div>
@@ -1506,8 +1496,8 @@ const ResultCard = React.forwardRef(function ResultCard({ player, enemy, battleg
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             {reckoning.map((s) => {
-              const accent = s.pct >= 0 ? 'var(--c-EASIA)' : 'var(--seal)';
-              const sideInk = s.side === 'The Enemy' ? 'var(--seal)' : 'var(--c-EASIA)';
+              const accent = s.fav ? 'var(--c-EASIA)' : 'var(--seal)';
+              const sideInk = accent;
               return (
                 <div key={s.tag + s.name} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 9px',
                   borderRadius: 3, background: 'rgba(255,250,235,0.55)', border: '1px solid var(--line)',
@@ -1595,17 +1585,7 @@ function DResult({ player, enemy, battleground, twist, onReplay }) {
   const counting = stage === 'counting';
   return (
     <div data-screen-label="Verdict" style={{ maxWidth: 1320, margin: '0 auto', paddingTop: 6 }}>
-      <div style={{ textAlign: 'center' }}>
-        <div className="deco" style={{ fontSize: 76, fontWeight: 900, margin: '6px 0 0',
-          color: win ? 'var(--seal)' : 'var(--ink-soft)', transition: 'color .4s',
-          animation: counting ? 'woaPop 0.45s ease' : 'none' }}>
-          {win ? 'Victory' : 'Defeat'}
-        </div>
-        <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 20, color: 'var(--ink-soft)' }}>
-          {win ? 'History will remember your legion.' : 'The chronicles record a noble loss.'}
-        </div>
-      </div>
-      <div className="result-grid" style={{ marginTop: 30 }}>
+      <div className="result-grid">
         <div className="res-you">
           <RailTitle color="var(--c-EASIA)">Your Legion</RailTitle>
           <PlayerIdeologyPlaque def={pDef} />
@@ -1613,13 +1593,17 @@ function DResult({ player, enemy, battleground, twist, onReplay }) {
             {D.POSITIONS.map((p, i) => <FigureRow key={p.key} fig={player.squad[p.key]} positionAbbr={p.abbr} animate delay={i * 50} pos={p.key} />)}
           </div>
         </div>
-        <div className="res-card">
-          <div style={{ animation: counting ? 'woaPop 0.5s ease both' : 'none',
-            filter: counting ? 'drop-shadow(0 0 18px rgba(212,175,79,0.45))' : 'none', transition: 'filter .6s' }}>
-            <ResultCard player={shownPlayer} enemy={shownEnemy} battleground={battleground} win={win} grade={grade}
-              twist={stage === 'counting' || stage === 'settled' ? twist : null} />
+        <div className="res-card" style={{ overflow: 'hidden' }}>
+          {/* the placard scrolls inside itself if its reckoning ever runs long;
+              the Share / New War buttons stay pinned and always visible */}
+          <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', paddingRight: 2 }}>
+            <div style={{ animation: counting ? 'woaPop 0.5s ease both' : 'none',
+              filter: counting ? 'drop-shadow(0 0 18px rgba(212,175,79,0.45))' : 'none', transition: 'filter .6s' }}>
+              <ResultCard player={shownPlayer} enemy={shownEnemy} battleground={battleground} win={win} grade={grade}
+                twist={stage === 'counting' || stage === 'settled' ? twist : null} />
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+          <div style={{ display: 'flex', gap: 12, marginTop: 14, flexShrink: 0 }}>
             <button className="btn btn-primary" style={{ flex: 2 }}>⤴ Share the Chronicle</button>
             <button className="btn btn-ghost" style={{ flex: 1 }} onClick={onReplay}>New War</button>
           </div>
@@ -1694,7 +1678,7 @@ export function DesktopApp() {
 
   return (
     <div className="woa-desk">
-      <div className="desk-wrap">
+      <div className="desk-wrap" data-screen={screen}>
         <DBar phaseIdx={phaseIdx} battleground={battleground} right={rightLabel} onJump={jumpTo} onBooks={() => setBooksOpen(true)} />
         {screen === 'intro'   && <DIntro battleground={battleground} enemy={enemy} enemyIdeology={enemyIdeologyDef} onBegin={() => setScreen('spin')} />}
         {screen === 'spin'    && <DSpin squad={squad} setSquad={setSquad} battleground={battleground} exclude={enemyNames} onComplete={() => setScreen('council')} enemy={enemy} enemyIdeology={enemyIdeologyDef} rerolls={rerolls} setRerolls={setRerolls} />}
@@ -1704,8 +1688,9 @@ export function DesktopApp() {
           onGo={() => setScreen('result')} />}
         {screen === 'result'  && scored && <DResult player={scored.player} enemy={scored.foe} battleground={battleground} twist={twist} onReplay={newWar} />}
         <DeskCartouche battleground={battleground} />
-        <BooksOverlay open={booksOpen} onClose={() => setBooksOpen(false)} />
       </div>
+      {/* Portaled to <body> so overlays always cover the full viewport. */}
+      <BooksOverlay open={booksOpen} onClose={() => setBooksOpen(false)} />
     </div>
   );
 }

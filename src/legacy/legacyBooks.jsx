@@ -1,6 +1,8 @@
 import React, { useState as bS, useEffect as bE, useMemo as bM } from 'react';
+import { createPortal as bPortal } from 'react-dom';
 import { WOA as B } from './legacyData';
 import { Crest, StatRow, hexA } from './legacyComponents.jsx';
+import { chronicleFor } from './chronicles';
 
 export function BookGlyph({ size = 15, color = 'currentColor' }) {
   return (
@@ -25,22 +27,29 @@ function BookChip({ label, ink, on, onToggle }) {
   );
 }
 
-function BookCard({ fig }) {
+function BookCard({ fig, onOpen }) {
   const posChips = B.POSITIONS.filter(p => fig.eligible.includes(p.key));
   return (
-    <div className="panel" style={{ padding: '12px 13px', display: 'flex', gap: 11, alignItems: 'flex-start',
-      borderLeft: `4px solid ${fig.regionInk}`, animation: 'woaFadeUp 0.3s ease both' }}>
+    <div role="button" tabIndex={0}
+      onClick={() => onOpen(fig)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(fig); } }}
+      className="panel" style={{ padding: '12px 13px', display: 'flex', gap: 11, alignItems: 'flex-start',
+      borderLeft: `4px solid ${fig.regionInk}`, animation: 'woaFadeUp 0.3s ease both',
+      cursor: 'pointer', userSelect: 'none' }}>
       <div style={{ flexShrink: 0 }}>
         <Crest fig={fig} size={42} pos={fig.eligible[0]} />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
           <span className="disp" style={{ fontSize: 15.5, lineHeight: 1.05 }}>{fig.name}</span>
-          <span className="disp" style={{ fontSize: 13, color: 'var(--gold)', whiteSpace: 'nowrap' }}>{fig.pr}</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
+            <span className="disp" style={{ fontSize: 13, color: 'var(--gold)', whiteSpace: 'nowrap' }}>{fig.pr}</span>
+            <span style={{ fontSize: 12, color: 'var(--ink-faint)', lineHeight: 1 }}>›</span>
+          </span>
         </div>
         <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 11.5, color: 'var(--ink-soft)', marginTop: 1,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          {fig.regionName} · {fig.eraName}
+          {fig.regionName} · {fig.eraName} · <span style={{ fontStyle: 'normal', fontWeight: 700, color: 'var(--ink-soft)' }}>{fig.tier}</span>
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, marginTop: 6 }}>
           {posChips.map(p => (
@@ -64,17 +73,74 @@ function BookCard({ fig }) {
   );
 }
 
+// The full-chronicle pop-out — opened from a Books card, dismissed by the
+// close button, the scrim, or Escape.
+function ChronicleModal({ fig, onClose }) {
+  const posChips = B.POSITIONS.filter(p => fig.eligible.includes(p.key));
+  const { hook, body } = chronicleFor(fig);
+  return (
+    <div onClick={(e) => { e.stopPropagation(); onClose(); }} style={{
+      position: 'absolute', inset: 0, zIndex: 120, background: 'rgba(20,12,4,0.66)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '34px 30px',
+      animation: 'woaFadeUp 0.18s ease both' }}>
+      <div onClick={(e) => e.stopPropagation()} className="panel" role="dialog" aria-label={`${fig.name} chronicle`}
+        style={{ position: 'relative', width: 'min(560px, 100%)', maxHeight: '100%', overflowY: 'auto',
+          padding: '24px 28px 26px', borderLeft: `5px solid ${fig.regionInk}`,
+          boxShadow: '0 26px 70px rgba(20,12,4,0.6)', animation: 'woaPop 0.3s ease both' }}>
+        <div className="frame-rule" />
+        <button type="button" onClick={onClose} title="Close" style={{
+          position: 'absolute', top: 14, right: 14, width: 30, height: 30,
+          background: 'none', border: '1px solid var(--panel-edge)', borderRadius: 3, cursor: 'pointer',
+          fontFamily: 'var(--display)', fontSize: 13, fontWeight: 700, color: 'var(--ink-soft)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+
+        <div style={{ display: 'flex', gap: 16, alignItems: 'center', paddingRight: 28 }}>
+          <div style={{ flexShrink: 0 }}><Crest fig={fig} size={58} pos={fig.eligible[0]} /></div>
+          <div style={{ minWidth: 0 }}>
+            <div className="disp" style={{ fontSize: 27, lineHeight: 1.02 }}>{fig.name}</div>
+            <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-soft)', marginTop: 3 }}>
+              {fig.regionName} · {fig.eraName} · <span style={{ fontStyle: 'normal', fontWeight: 700, color: 'var(--seal)' }}>{fig.tier}</span>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 7 }}>
+              {posChips.map(p => (
+                <span key={p.key} style={{ fontFamily: 'var(--display)', fontSize: 8.5, fontWeight: 700, textTransform: 'uppercase',
+                  letterSpacing: '0.1em', padding: '2px 6px', borderRadius: 2,
+                  color: 'var(--seal)', border: '1px solid rgba(143,45,34,0.35)', background: 'rgba(143,45,34,0.06)' }}>{p.name}</span>
+              ))}
+              {fig.tags.map(t => (
+                <span key={t} style={{ fontFamily: 'var(--display)', fontSize: 8.5, fontWeight: 600, textTransform: 'uppercase',
+                  letterSpacing: '0.1em', padding: '2px 6px', borderRadius: 2,
+                  color: fig.regionInk, border: `1px solid ${hexA(fig.regionInk, 0.35)}`, background: hexA(fig.regionInk, 0.07) }}>{t}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ margin: '16px 0' }}><StatRow fig={fig} /></div>
+
+        <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 15, color: 'var(--seal)', lineHeight: 1.45 }}>{hook}</div>
+        <div style={{ fontFamily: 'var(--serif)', fontSize: 14, color: 'var(--ink)', lineHeight: 1.6, marginTop: 9 }}>{body}</div>
+      </div>
+    </div>
+  );
+}
+
 export function BooksOverlay({ open, onClose }) {
   const [regSel, setRegSel] = bS(() => new Set());
   const [eraSel, setEraSel] = bS(() => new Set());
   const [posSel, setPosSel] = bS(() => new Set());
+  const [detail, setDetail] = bS(null); // figure whose chronicle pop-out is open
 
   bE(() => {
     if (!open) return;
-    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    // Escape closes the chronicle pop-out first, then the Books.
+    const onKey = (e) => {
+      if (e.key !== 'Escape') return;
+      if (detail) setDetail(null); else onClose();
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
+  }, [open, onClose, detail]);
 
   const list = bM(() => {
     return B.ROSTER
@@ -93,7 +159,7 @@ export function BooksOverlay({ open, onClose }) {
     setter(next);
   };
 
-  return (
+  return bPortal(
     <div data-screen-label="The Books" onClick={onClose} style={{
       position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(26,19,11,0.62)',
       display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '34px 30px',
@@ -164,12 +230,15 @@ export function BooksOverlay({ open, onClose }) {
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(272px, 1fr))', gap: 10 }}>
-              {list.map(f => <BookCard key={f.id} fig={f} />)}
+              {list.map(f => <BookCard key={f.id} fig={f} onOpen={setDetail} />)}
             </div>
           )}
         </div>
       </div>
-    </div>
+
+      {detail && <ChronicleModal fig={detail} onClose={() => setDetail(null)} />}
+    </div>,
+    document.body,
   );
 }
 
